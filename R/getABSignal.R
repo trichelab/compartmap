@@ -44,7 +44,7 @@
 #' #Get A/B signal
 #' absignal <- getABSignal(bin.cor.counts)
 
-getABSignal <- function(x, k = 5, iter = 2, squeeze = FALSE){
+getABSignal <- function(x, k = 2, iter = 2, squeeze = FALSE){
   message("Calculating eigenvectors...")
   pc <- .getFirstPC(x$binmat.cor)
   if (squeeze) pc <- ifisherZ(pc)
@@ -62,10 +62,12 @@ getABSignal <- function(x, k = 5, iter = 2, squeeze = FALSE){
 .getFirstPC <- function (matrix, ncomp = 1) {  
   matrix <- t(scale(t(matrix), center = TRUE, scale = FALSE))
   if (ncomp > 1) {
-    p.mat <- nipals(matrix, ncomp = ncomp)$p
+    #return LEFT singular vector
+    p.mat <- nipals(matrix, ncomp = ncomp)$t
   }
   else {
-    p.mat <- nipals(matrix, ncomp = ncomp)$p[, 1]
+    #return LEFT singular vector
+    p.mat <- nipals(matrix, ncomp = ncomp)$t[, 1]
     csums <- colSums(matrix, na.rm=TRUE)
     if (cor(csums, p.mat) < 0){
       p.mat <- -p.mat

@@ -83,6 +83,14 @@ getBinMatrix <- function(x, genloc, chr = "chr1", chr.start = 0, chr.end = NULL,
   #TODO: allow for bin matrices to be generated for all chrs
   x.bin <- apply(x, 2, function(x) {
     zvec <- rep(0, n) #Generate a vector of zeroes
+    # jse.shrunken <- tapply(x, INDEX = ids, function(loci) {
+    #   C <- sd(log(loci + 0.0001))
+    #   prior.m <- mean(log(loci + 0.0001))
+    #   return(round(exp(prior.m + C*(log(loci + 0.0001) - prior.m))))
+    # })
+    # jse.shrunken <- unlist(jse.shrunken)
+    # names(jse.shrunken) <- gsub(".*\\.", "", names(jse.shrunken))
+    # a <- tapply(jse.shrunken, INDEX=ids, FUN=FUN) #Summarize data
     a <- tapply(x, INDEX=ids, FUN=FUN) #Summarize data
     zvec[as.numeric(names(a))] <- a
     zvec

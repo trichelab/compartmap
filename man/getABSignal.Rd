@@ -4,7 +4,7 @@
 \alias{getABSignal}
 \title{Calculate Pearson correlations of smoothed eigenvectors}
 \usage{
-getABSignal(x, k = 5, iter = 2, squeeze = FALSE)
+getABSignal(x, k = 2, iter = 2, squeeze = FALSE)
 }
 \arguments{
 \item{x}{A list object from getCorMatrix}
