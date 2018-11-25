@@ -30,8 +30,8 @@ The expected input for compartmap is either a RangedSummarizedExperiment object 
 ```{r loadData}
 
 suppressPackageStartupMessages(library(compartmap))
-library(GenomicRanges)
-library(Homo.sapiens)
+suppressPackageStartupMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(Homo.sapiens))
 
 #Load in some example methylation array data
 #This data is derived from https://f1000research.com/articles/5-1281/v3
