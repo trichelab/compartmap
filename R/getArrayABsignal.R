@@ -12,6 +12,7 @@
 #' @param allchrs Whether all autosomes should be used for A/B inference
 #' @param chr Specific chromosomes to analyze
 #' @param targets Specify samples to use as shrinkage targets
+#' @param unitarize Whether or not to unitarize the output (default is FALSE)
 #' @param ... Additional arguments
 #'
 #' @return A p x n matrix (samples as columns and compartments as rows) of compartments
@@ -19,7 +20,8 @@
 #' @import Homo.sapiens
 #' @export
 
-getArrayABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE, chr = NULL, targets = NULL, ...) {
+getArrayABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE,
+                             chr = NULL, targets = NULL, unitarize = FALSE, ...) {
   globalMeanSet <- .getMeanGrSet(obj, targets)
   columns <- colnames(obj)
   names(columns) <- columns
@@ -29,17 +31,17 @@ getArrayABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE, chr = 
   if (parallel) {
     options(mc.cores=detectCores()/2) # RAM blows up otherwise 
     do.call(cbind, 
-            mclapply(columns,getComp,grSet=obj,globalMeanSet=globalMeanSet,chr=chr,targets=targets,res=res))
+            mclapply(columns,getComp,grSet=obj,globalMeanSet=globalMeanSet,chr=chr,targets=targets,res=res,unitarize=unitarize))
   } else { 
     do.call(cbind, 
-            lapply(columns,getComp,grSet=obj,globalMeanSet=globalMeanSet,chr=chr,targets=targets,res=res))
+            lapply(columns,getComp,grSet=obj,globalMeanSet=globalMeanSet,chr=chr,targets=targets,res=res,unitarize=unitarize))
   } 
 }
 
 #Helper function to get compartments as in minfi::compartments
 .arraycompartments <- function(obj, resolution = 1e6, what="OpenSea",
                          chr = "chr22", method = c("pearson", "spearman"),
-                         keep = FALSE) {
+                         keep = FALSE, unitarize = FALSE) {
   if (length(chr) > 1) stop("Expected a single chromosome internally and got more than one...")
   if (!(chr %in% seqlevels(obj))) stop("The supplied chromosome is not found in the seqlevels of the object...")
   method <- match.arg(method)
@@ -49,7 +51,7 @@ getArrayABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE, chr = 
     what = what,
     chr = chr,
     method = method)
-  gr <- .extractAB(gr, keep = keep)
+  gr <- .extractAB(gr, keep = keep, unitarize = unitarize)
   gr$compartment <- .extractOpenClosedArray(gr)
   gr
 }
@@ -190,6 +192,8 @@ getArrayABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE, chr = 
 }
 
 #Helper function to unitarize the A/B estimates
+#Beginning to deprecate the internal unitarization for array data
+#This function exists for plotting with plotAB
 .unitarize <- function(x, medianCenter = TRUE) {
     if (medianCenter) x <- x - median(x, na.rm = TRUE)
     bad <- is.na(x)
@@ -307,13 +311,13 @@ getArrayABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE, chr = 
 }
 
 #Helper function to extract A/B compartments
-.extractAB <- function(gr, keep = TRUE, svdMethod = "qr"){
+.extractAB <- function(gr, keep = TRUE, svdMethod = "qr", unitarize = FALSE){
     if (!(is(gr, "GRanges") && "cor.matrix" %in% names(mcols(gr)))) {
         stop("'gr' must be an object created by createCorMatrix")
     }
     pc <- .getFirstPCarray(gr$cor.matrix, method = svdMethod)
     pc <- .meanSmootherArray(pc)
-    pc <- .unitarize(pc)
+    if (unitarize) pc <- .unitarize(pc)
     # Fix sign of eigenvector
     # Also check for NA correlation between colsums and the PC
     # Not sure if we should just dump all of these to NAs if the correlation fails
@@ -322,7 +326,9 @@ getArrayABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE, chr = 
     # Currently we leave it as is...
     if (!is.na(cor(colSums2(gr$cor.matrix), pc)) & cor(colSums2(gr$cor.matrix), pc) < 0 ) {
         pc <- -pc
-    }
+    } else { 
+      message("The eigenvalues are close to zero...")
+      message("Cannot ensure that positive eigenvalues are associated with the closed compartment...")}
     pc <- pc * sqrt(length(pc))
     gr$pc <- pc
 
@@ -343,22 +349,22 @@ getArrayABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE, chr = 
   return(subGrSet) 
 }
 
-.getPairedArray <- function(column, grSet, globalMeanSet=NULL, res=1e6, targets = NULL, ...) {
+.getPairedArray <- function(column, grSet, globalMeanSet=NULL, res=1e6, targets = NULL, unitarize = FALSE, ...) {
   message("Computing shrunken compartment eigenscores for ", column, "...") 
   if(is.null(globalMeanSet)) globalMeanSet <- .getMeanGrSet(grSet, targets)
-  res <- .arraycompartments(cbind(grSet[,column], globalMeanSet), keep=FALSE, resolution=res, ...)
+  res <- .arraycompartments(cbind(grSet[,column], globalMeanSet), keep=FALSE, resolution=res, unitarize = unitarize, ...)
   pc <- res$pc
   names(pc) <- as.character(res)
   return(pc)
 }
 
-.getPairedAllChrsArray <- function(column, grSet, globalMeanSet=NULL, res=1e6, targets = NULL, ...) {
+.getPairedAllChrsArray <- function(column, grSet, globalMeanSet=NULL, res=1e6, targets = NULL, unitarize = FALSE, ...) {
   if (is.null(globalMeanSet)) globalMeanSet <- .getMeanGrSet(grSet, targets)
   chrs <- intersect(paste0("chr", seq_along(1:22)), seqlevels(grSet))
   names(chrs) <- chrs
   getPairedChr <- function(chr) { 
     message("Computing shrunken eigenscores for ", column, " on ", chr, "...") 
-    res <- .arraycompartments(cbind(grSet[,column],globalMeanSet),keep=FALSE,resolution=res,chr=chr)
+    res <- .arraycompartments(cbind(grSet[,column],globalMeanSet),keep=FALSE,resolution=res,chr=chr,unitarize=unitarize)
     pc <- res$pc
     names(pc) <- as.character(res)
     return(pc)

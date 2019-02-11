@@ -5,7 +5,7 @@
 \title{Estimate A/B compartments from methylation array data}
 \usage{
 getArrayABsignal(obj, res = 1e+06, parallel = FALSE, allchrs = FALSE,
-  chr = NULL, targets = NULL, ...)
+  chr = NULL, targets = NULL, unitarize = FALSE, ...)
 }
 \arguments{
 \item{obj}{Input GenomicRatioSet object}
@@ -19,6 +19,8 @@ getArrayABsignal(obj, res = 1e+06, parallel = FALSE, allchrs = FALSE,
 \item{chr}{Specific chromosomes to analyze}
 
 \item{targets}{Specify samples to use as shrinkage targets}
+
+\item{unitarize}{Whether or not to unitarize the output (default is FALSE)}
 
 \item{...}{Additional arguments}
 }
