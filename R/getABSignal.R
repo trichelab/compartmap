@@ -121,5 +121,5 @@ getABSignal <- function(x, k = 2, iter = 2, squeeze = FALSE){
 # Author: Jean-Philippe Fortin
 # May 6th 2015
 .extractOpenClosed <- function(pc, cutoff = 0){
-  ifelse(pc < cutoff, "open", "closed")
+  ifelse(pc > cutoff, "open", "closed")
 }

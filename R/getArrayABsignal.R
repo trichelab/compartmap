@@ -329,9 +329,11 @@ getArrayABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE,
     # Currently we leave it as is...
     if (!is.na(cor(colSums2(gr$cor.matrix), pc)) & cor(colSums2(gr$cor.matrix), pc) < 0 ) {
         pc <- -pc
-    } else { 
-      message("The eigenvalues are close to zero...")
-      message("Cannot ensure that positive eigenvalues are associated with the closed compartment...")}
+        } 
+    if (is.na(cor(colSums2(gr$cor.matrix), pc))) { 
+        message("The eigenvalues are close to zero...")
+        message("Cannot ensure that positive eigenvalues are associated with the closed compartment...")
+        }
     pc <- pc * sqrt(length(pc))
     gr$pc <- pc
 
