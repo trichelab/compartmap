@@ -10,3 +10,10 @@ inst/doc/*.html
 .Rproj.user
 *.Rproj
 .*.sw*
+
+# History files
+.Rhistory
+.Rapp.history
+
+# Session Data files
+.RData
