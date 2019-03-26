@@ -37,7 +37,8 @@ getATACABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE, chr = N
   if (allchrs == TRUE) getComp <- .getPairedAllChrs
   
   if (parallel) {
-    options(mc.cores=detectCores()/2) # RAM blows up otherwise 
+    #this should be set earlier...
+    #options(mc.cores=detectCores()/2) # RAM blows up otherwise 
     do.call(cbind, 
             mclapply(columns,getComp,obj=obj,globalMeanSet=globalMeanSet,chr=chr,targets=targets,res=res,...))
   } else { 
@@ -83,6 +84,7 @@ getATACABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE, chr = N
 
 .getPairedAllChrs <- function(column, obj, globalMeanSet=NULL, res=1e6, chr = NULL, ...) {
   if (is.null(globalMeanSet)) globalMeanSet <- .getGlobalMeansATAC(obj)
+  #this isn't what we want to do...
   chrs <- paste0("chr", c(seq(1,22)))
   names(chrs) <- chrs
   getPairedChr <- function(chr) { 

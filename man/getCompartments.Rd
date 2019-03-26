@@ -6,7 +6,7 @@
 \usage{
 getCompartments(obj, type = c("atac", "array"), res = 1e+06,
   parallel = FALSE, chrs = "chr1", genome = "hg19", targets = NULL,
-  run_examples = FALSE, ...)
+  cores = 1, run_examples = FALSE, ...)
 }
 \arguments{
 \item{obj}{The object with which to perform compartment inference}
@@ -22,6 +22,8 @@ getCompartments(obj, type = c("atac", "array"), res = 1e+06,
 \item{genome}{Genome to use (default is hg19)}
 
 \item{targets}{Specify samples to use as shrinkage targets}
+
+\item{cores}{Specify the number of cores to use when running in parallel}
 
 \item{run_examples}{Whether to run ATAC-seq and 450k example analysis}
 

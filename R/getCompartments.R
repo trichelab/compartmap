@@ -13,6 +13,7 @@
 #' @param chrs Chromosomes to operate on (can be individual chromosomes, a list of chromosomes, or all)
 #' @param genome Genome to use (default is hg19)
 #' @param targets Specify samples to use as shrinkage targets
+#' @param cores Specify the number of cores to use when running in parallel
 #' @param run_examples Whether to run ATAC-seq and 450k example analysis
 #' @param ... Other parameters to pass to internal functions
 #'
@@ -41,7 +42,8 @@
 #' array_compartments <- getCompartments(array.data.chr14, type = "array", parallel = FALSE, chrs = "chr14")}
 
 getCompartments <- function(obj, type = c("atac", "array"), res = 1e6, parallel = FALSE,
-                             chrs = "chr1", genome = "hg19", targets = NULL, run_examples = FALSE, ...) {
+                             chrs = "chr1", genome = "hg19", targets = NULL,
+                             cores = 1, run_examples = FALSE, ...) {
 
   # short circuit type checking if just testing
   if (run_examples) return(.run_examples())
@@ -65,7 +67,10 @@ getCompartments <- function(obj, type = c("atac", "array"), res = 1e6, parallel 
             paste(shQuote(chrs), collapse=", "))
   }
 
-
+  #set the number of cores if running in parallel
+  if (parallel) options(mc.cores = cores)
+  if (parallel & cores == 1) options(mc.cores = detectCores()/2)
+  
   # call the appropriate function
   switch(type,
          atac=getATACABsignal(obj=obj, res=res, parallel=parallel, 

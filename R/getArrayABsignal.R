@@ -29,7 +29,8 @@ getArrayABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE,
   if (allchrs == TRUE) getComp <- .getPairedAllChrsArray
   
   if (parallel) {
-    options(mc.cores=detectCores()/2) # RAM blows up otherwise 
+    #this should be set earlier...
+    #options(mc.cores=detectCores()/2) # RAM blows up otherwise 
     do.call(cbind, 
             mclapply(columns,getComp,grSet=obj,globalMeanSet=globalMeanSet,chr=chr,targets=targets,res=res,unitarize=unitarize))
   } else { 
@@ -360,6 +361,7 @@ getArrayABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE,
 
 .getPairedAllChrsArray <- function(column, grSet, globalMeanSet=NULL, res=1e6, targets = NULL, unitarize = FALSE, ...) {
   if (is.null(globalMeanSet)) globalMeanSet <- .getMeanGrSet(grSet, targets)
+  #this isn't what we want to do...
   chrs <- intersect(paste0("chr", seq_along(1:22)), seqlevels(grSet))
   names(chrs) <- chrs
   getPairedChr <- function(chr) { 
