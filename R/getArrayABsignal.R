@@ -31,6 +31,8 @@ getArrayABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE,
   if (parallel) {
     #this should be set earlier...
     #options(mc.cores=detectCores()/2) # RAM blows up otherwise 
+    warning("Parallel processing for arrays is memory hungry...")
+    warning("Parallel processing for arrays is currently unstable and should be run serially for now...")
     do.call(cbind, 
             mclapply(columns,getComp,grSet=obj,globalMeanSet=globalMeanSet,chr=chr,targets=targets,res=res,unitarize=unitarize))
   } else { 
