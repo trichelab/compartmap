@@ -14,6 +14,7 @@
 #' @param genome Genome to use (default is hg19)
 #' @param targets Specify samples to use as shrinkage targets
 #' @param cores Specify the number of cores to use when running in parallel
+#' @param bin.shrink Whether to perform bin-level shrinkage
 #' @param run_examples Whether to run ATAC-seq and 450k example analysis
 #' @param ... Other parameters to pass to internal functions
 #'
@@ -43,7 +44,7 @@
 
 getCompartments <- function(obj, type = c("atac", "array"), res = 1e6, parallel = FALSE,
                              chrs = "chr1", genome = "hg19", targets = NULL,
-                             cores = 1, run_examples = FALSE, ...) {
+                             cores = 1, bin.shrink = TRUE, run_examples = FALSE, ...) {
 
   # short circuit type checking if just testing
   if (run_examples) return(.run_examples())
@@ -74,9 +75,11 @@ getCompartments <- function(obj, type = c("atac", "array"), res = 1e6, parallel 
   # call the appropriate function
   switch(type,
          atac=getATACABsignal(obj=obj, res=res, parallel=parallel, 
-                              allchrs=allchrs, chr=chrs, targets=targets, ...),
+                              allchrs=allchrs, chr=chrs, targets=targets,
+                              bin.shrink=bin.shrink, ...),
          array=getArrayABsignal(obj=obj, res=res, parallel=parallel, 
-                                allchrs=allchrs, chr=chrs, targets=targets,...))
+                                allchrs=allchrs, chr=chrs, targets=targets,
+                                bin.shrink=bin.shrink, ...))
   
 }
 

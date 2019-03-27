@@ -5,7 +5,7 @@
 \title{Estimate A/B compartments from ATAC-seq data}
 \usage{
 getATACABsignal(obj, res = 1e+06, parallel = FALSE, allchrs = FALSE,
-  chr = NULL, targets = NULL, ...)
+  chr = NULL, targets = NULL, bin.shrink = TRUE, ...)
 }
 \arguments{
 \item{obj}{Input GenomicRatioSet object}
@@ -19,6 +19,8 @@ getATACABsignal(obj, res = 1e+06, parallel = FALSE, allchrs = FALSE,
 \item{chr}{Specify a chromosome to analyze}
 
 \item{targets}{Specify samples as shrinkage targets}
+
+\item{bin.shrink}{Specify whether to use the JSE bin-level shrinkage approach}
 
 \item{...}{Additional arguments}
 }
