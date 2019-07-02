@@ -5,8 +5,9 @@
 #' @param sparsity.mat A matrix of summarized sparsity measures
 #' @param rse.obj The unfiltered RangedSummarizedExperiment object
 #' @param cluster.method Clustering method to use (default: kmeans)
-#' @param clusters How many clusters to generate
+#' @param clusters How many clusters to generate; if NULL it will autopick the cluster number (default: NULL)
 #' @param plot.data Whether to plot the data
+#' @param invert Invert which cluster is used to filter
 #'
 #' @return A filtered RangedSummarizedExperiment object and/or plot of the filtered data
 #' @export
@@ -18,7 +19,7 @@
 #'
 
 filterCells <- function(sparsity.mat, rse.obj, cluster.method = c("kmeans", "dpmeans"),
-                        clusters = 2, plot.data = FALSE) {
+                        clusters = NULL, plot.data = FALSE, invert = FALSE) {
   #this function is to filter out poor/low quality cells given the sparsity metrics
   #the underlying idea is that we will have 2 clusters of cells
   #1. cells with sufficient signal to use in our inference
@@ -63,6 +64,35 @@ filterCells <- function(sparsity.mat, rse.obj, cluster.method = c("kmeans", "dpm
   
   #perform the clustering
   message("Clustering the data using: ", cluster.method)
+  #the following only holds with kmeans
+  #dp means does this for us and even better with lambda means - once that is implemented
+  if (is.null(clusters)) {
+    message("Auto-picking number of clusters based on sum of squares.")
+    possible.clusters <- seq(2, 20)
+    #initialize at 2 clusters
+    cluster.choice <- 2
+    #initialize ss for 1 cluster
+    ss.choice <- 0
+    for (c in possible.clusters) {
+      #cluster with kmeans using the starting point
+      kmeans.results <- stats::kmeans(t(sparsity.mat), centers = c)
+      #compute sum of squares
+      ss <- kmeans.results$betweenss / kmeans.results$totss
+      message("Using ", c, " clusters: fraction between sum of squares over total = ", ss*100, "%")
+      if (ss.choice == 0) {
+        ss.choice <- ss
+        }
+      else {
+        ss.choice <- ifelse((ss - ss.choice) > 0.1, ss, "converged")
+        #cluster.choice <- ifelse((ss - ss.choice) > 0.1, c, "converged")
+      }
+      if (as.character(ss.choice) == "converged") {
+        message("Converged with clusters = ", c - 1)
+        break()
+      }
+    }
+    clusters <- c - 1
+  }
   if (cluster.method == "kmeans") cluster.results <- stats::kmeans(t(sparsity.mat), centers = clusters)
   if (cluster.method == "dpmeans") stop("DPmeans is not implemented yet.")
   
@@ -77,7 +107,11 @@ filterCells <- function(sparsity.mat, rse.obj, cluster.method = c("kmeans", "dpm
   #and querying which cluster that cell/sample belongs to
   cluster.to.filter <- cluster.results$cluster[names(sort(rowSums(t(sparsity.mat))))[1]]
   message("Filtering out cells belonging to cluster ", as.character(cluster.to.filter))
-  filter.vec <- ifelse(cluster.results$cluster == cluster.to.filter, FALSE, TRUE) #make sure logic is inverted
+  if (invert) {
+    filter.vec <- ifelse(cluster.results$cluster == cluster.to.filter, TRUE, FALSE) #make sure logic is inverted
+  } else {
+    filter.vec <- ifelse(cluster.results$cluster == cluster.to.filter, FALSE, TRUE) #make sure logic is inverted
+  }
   filtered.data <- rse.obj[,filter.vec]
   message("Filtered out ", table(filter.vec)["FALSE"], " cells.")
   message("Kept ", table(filter.vec)["TRUE"], " cells with sufficient signal.")
@@ -85,19 +119,25 @@ filterCells <- function(sparsity.mat, rse.obj, cluster.method = c("kmeans", "dpm
   #plot the data
   if (plot.data) {
     message("Plotting results.")
+    
+    #set colors
+    cols <- colorRampPalette(brewer.pal(9, "Paired"))
+    
+    #make a boxplot 
+    
+    #ggplot()
+    
     pca_sparsity <- prcomp(t(sparsity.mat))
     pr_comps <- data.frame(pca_sparsity$x)
     
     # Combine for plotting
     pr_comps$clusters <- factor(cluster.results$cluster)
     
-    cols <- colorRampPalette(brewer.pal(3, "Paired"))
-    
     pca_plot <- ggplot(pr_comps, aes(x=PC1, y=PC2, color=clusters)) + 
       geom_point(size=3.5) + 
       ylim(-40, 40) +
       xlim(-40, 40) +
-      scale_color_manual(values=cols(2)) + 
+      scale_color_manual(values=cols(length(cluster.results$size))) + 
       theme_bw(10)
     
     # Plot percent variation explained
