@@ -24,7 +24,8 @@ Imports: SummarizedExperiment,
          gtools,
          parallel,
          grid,
-         pbapply
+         pbapply,
+	 viridis
 Suggests: covr,
           testthat,
           knitr

@@ -6,6 +6,7 @@
 #' @param rse.obj The unfiltered RangedSummarizedExperiment object
 #' @param cluster.method Clustering method to use (default: kmeans)
 #' @param clusters How many clusters to generate; if NULL it will autopick the cluster number (default: NULL)
+#' @param tol The tolerance or minimum difference in fraction of between cluster sum of squares over total for k-means auto-picking cluster number (default: 0.1)
 #' @param plot.data Whether to plot the data
 #' @param invert Invert which cluster is used to filter
 #'
@@ -14,12 +15,14 @@
 #' @import RColorBrewer
 #' @import grid
 #' @import SummarizedExperiment
+#' @import ggplot2
+#' @import viridis
 #'
 #' @examples
 #'
 
 filterCells <- function(sparsity.mat, rse.obj, cluster.method = c("kmeans", "dpmeans"),
-                        clusters = NULL, plot.data = FALSE, invert = FALSE) {
+                        clusters = NULL, tol = 0.1, plot.data = FALSE, invert = FALSE) {
   #this function is to filter out poor/low quality cells given the sparsity metrics
   #the underlying idea is that we will have 2 clusters of cells
   #1. cells with sufficient signal to use in our inference
@@ -27,34 +30,6 @@ filterCells <- function(sparsity.mat, rse.obj, cluster.method = c("kmeans", "dpm
   #input comes from getBinSparsity()
   #output will be a filtered RangeSummarizedExperiment object
   #ideally we can do this with lambda means - but not implemented yet...
-  
-  #check if the input is a per locus matrix and summarize if needed
-  # if (is(sparsity.mat, "list")) {
-  #   if (!("scaled.sparsity.mat" %in% names(sparsity.mat[[1]]))) {
-  #     message("Summarizing sparsity measures.")
-  #     if ("sparsity.mat" %in% names(sparsity.mat)) {
-  #       sparsity.mat$sparsity.mat <- colSums(sparsity.mat$sparsity.mat) / nrow(sparsity.mat$sparsity.mat)
-  #       single.chr <- TRUE
-  #     } else {
-  #       sparsity.mat <- lapply(sparsity.mat, function(x) {
-  #         if ("sparsity.mat" %in% names(x)){
-  #           scaled.sparsity.mat <- colSums(x[1]) / nrow(x[1])
-  #           } else {
-  #             scaled.sparsity.mat <- colSums(x) / nrow(x)
-  #           }
-  #       })
-  #       single.chr <- FALSE
-  #     }
-  #   } else { single.chr <- FALSE }
-  # } else { single.chr <- FALSE } 
-  # 
-  # #assumes that the object was done using getBinMatrix and lapply
-  # if (is(sparsity.mat, "list") & single.chr) {
-  #   sparsity.mat <- as.matrix(sparsity.mat[1])
-  # } else if (is(sparsity.mat, "list")){
-  #   sparsity.mat.tmp <- lapply(sparsity.mat, function(x) x[1])
-  #   sparsity.mat <- plyr::ldply(sparsity.mat.tmp, "rbind")
-  #   }
   
   #check if the rse.obj is a RangedSummarizedExperiment object
   if (!is(rse.obj, "RangedSummarizedExperiment")) stop(rse.obj, " does not look like a RangedSummarizedExperiment object.")
@@ -78,12 +53,12 @@ filterCells <- function(sparsity.mat, rse.obj, cluster.method = c("kmeans", "dpm
       kmeans.results <- stats::kmeans(t(sparsity.mat), centers = c)
       #compute sum of squares
       ss <- kmeans.results$betweenss / kmeans.results$totss
-      message("Using ", c, " clusters: fraction between sum of squares over total = ", ss*100, "%")
+      message("Using ", c, " clusters: fraction between cluster sum of squares over total = ", ss*100, "%")
       if (ss.choice == 0) {
         ss.choice <- ss
         }
       else {
-        ss.choice <- ifelse((ss - ss.choice) > 0.1, ss, "converged")
+        ss.choice <- ifelse((ss - ss.choice) > tol, ss, "converged")
         #cluster.choice <- ifelse((ss - ss.choice) > 0.1, c, "converged")
       }
       if (as.character(ss.choice) == "converged") {
@@ -120,12 +95,26 @@ filterCells <- function(sparsity.mat, rse.obj, cluster.method = c("kmeans", "dpm
   if (plot.data) {
     message("Plotting results.")
     
-    #set colors
-    cols <- colorRampPalette(brewer.pal(9, "Paired"))
-    
     #make a boxplot 
+    bxdata <- data.frame(cmeans = colMeans(sparsity.mat),
+                         Clusters = factor(cluster.results$cluster))
+    bplot <- ggplot(bxdata, aes(x = Clusters, y = cmeans, group = Clusters, color = Clusters)) +
+      geom_boxplot() +
+      geom_jitter() +
+      scale_color_viridis(discrete = TRUE) +
+      xlab("Clusters") +
+      ylab("Genome-wide sparsity measures") +
+      theme_bw(10) +
+      ggtitle("Cluster assignment as a function of genome-wide sparsity measures") +
+      theme(
+        plot.title = element_text(hjust = 0.5, size = 20),
+        axis.text = element_text(size = 16),
+        axis.title = element_text(size = 16),
+        legend.text = element_text(size = 16),
+        legend.title = element_text(size = 16)
+      )
     
-    #ggplot()
+    print(bplot)
     
     pca_sparsity <- prcomp(t(sparsity.mat))
     pr_comps <- data.frame(pca_sparsity$x)
@@ -137,7 +126,7 @@ filterCells <- function(sparsity.mat, rse.obj, cluster.method = c("kmeans", "dpm
       geom_point(size=3.5) + 
       ylim(-40, 40) +
       xlim(-40, 40) +
-      scale_color_manual(values=cols(length(cluster.results$size))) + 
+      scale_color_viridis(discrete = TRUE) + 
       theme_bw(10)
     
     # Plot percent variation explained

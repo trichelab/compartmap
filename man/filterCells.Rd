@@ -5,7 +5,8 @@
 \title{Filter cells using either k-means or Dirichlet process means clustering of sparsity metrics}
 \usage{
 filterCells(sparsity.mat, rse.obj, cluster.method = c("kmeans",
-  "dpmeans"), clusters = 2, plot.data = FALSE)
+  "dpmeans"), clusters = NULL, tol = 0.1, plot.data = FALSE,
+  invert = FALSE)
 }
 \arguments{
 \item{sparsity.mat}{A matrix of summarized sparsity measures}
@@ -14,9 +15,13 @@ filterCells(sparsity.mat, rse.obj, cluster.method = c("kmeans",
 
 \item{cluster.method}{Clustering method to use (default: kmeans)}
 
-\item{clusters}{How many clusters to generate}
+\item{clusters}{How many clusters to generate; if NULL it will autopick the cluster number (default: NULL)}
+
+\item{tol}{The tolerance or minimum difference in fraction of between cluster sum of squares over total for k-means auto-picking cluster number (default: 0.1)}
 
 \item{plot.data}{Whether to plot the data}
+
+\item{invert}{Invert which cluster is used to filter}
 }
 \value{
 A filtered RangedSummarizedExperiment object and/or plot of the filtered data
