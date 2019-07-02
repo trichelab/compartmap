@@ -21,7 +21,7 @@ shrinkBinsArray(x, prior.means = NULL, chr = NULL, res = 1e+06, ...)
 A list object to pass to getCorMatrix
 }
 \description{
-\code{shrinkBinsATAC} returns shrunken bin-level estimates from methylation arrays
+\code{shrinkBinsArray} returns shrunken bin-level estimates from methylation arrays
 }
 \details{
 This function computes shrunken bin-level estimates using a James-Stein estimator, reformulated as an eBayes procedure
