@@ -103,7 +103,7 @@ filterCells <- function(sparsity.mat, rse.obj, cluster.method = c("kmeans", "dpm
       geom_jitter() +
       scale_color_viridis(discrete = TRUE) +
       xlab("Clusters") +
-      ylab("Genome-wide sparsity measures") +
+      ylab("Mean genome-wide sparsity measures") +
       theme_bw(10) +
       ggtitle("Cluster assignment as a function of genome-wide sparsity measures") +
       theme(
