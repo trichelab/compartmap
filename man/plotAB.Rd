@@ -5,7 +5,9 @@
 \title{Plots A/B compartment estimates on a per chromosome basis}
 \usage{
 plotAB(x, main = "", ylim = c(-1, 1), unitarize = FALSE,
-  reverse = FALSE, top.col = "deeppink4", bot.col = "grey50")
+  reverse = FALSE, top.col = "deeppink4", bot.col = "grey50",
+  with.ci = FALSE, filter = TRUE, filter.min.eigen = 0.02,
+  median.conf = FALSE)
 }
 \arguments{
 \item{x}{The matrix obejct returned from getCompartments}
@@ -21,6 +23,14 @@ plotAB(x, main = "", ylim = c(-1, 1), unitarize = FALSE,
 \item{top.col}{Top (pos. PC values) chromatin color to be plotted}
 
 \item{bot.col}{Bottom (neg. PC values) chromatin color to be plotted}
+
+\item{with.ci}{Whether to plot confidence intervals}
+
+\item{filter}{Whether to filter eigenvalues close to zero (default: TRUE)}
+
+\item{median.conf}{Whether to plot the median confidence estimate across the chromosome}
+
+\item{filter.lower.bound}{The minimum absolute eigenvalue to include in the plot}
 }
 \value{
 invisibly, the compartment estimates from the plot

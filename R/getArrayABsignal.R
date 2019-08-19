@@ -194,21 +194,6 @@ getArrayABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE,
   x
 }
 
-#Helper function to unitarize the A/B estimates
-#Beginning to deprecate the internal unitarization for array data
-#This function exists for plotting with plotAB
-.unitarize <- function(x, medianCenter = TRUE) {
-    if (medianCenter) x <- x - median(x, na.rm = TRUE)
-    bad <- is.na(x)
-    x[!bad] <- x[!bad] / sqrt(sum(x[!bad]^2))
-    n.bad <- sum(bad)
-    if (n.bad > 0) {
-        message(
-            sprintf("[.unitarize] %i missing values were ignored.\n", n.bad))
-    }
-    x
-}
-
 #Helper function to perform fsvd instead of the nipals method from mixOmics package
 #This needs to be resolved since nipals is required for ATAC but not here
 #We are already supporting nipals so why do we need fsvd too - or the inverse?
