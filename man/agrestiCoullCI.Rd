@@ -20,5 +20,6 @@ the "approximate" (q*100)% confidence interval for (p|n1,n0,q)
 Agresti-Coull confidence interval for a binomial proportion
 }
 \examples{
+binom.ci <- agrestiCoullCI(10, 3, 0.95)
 
 }
