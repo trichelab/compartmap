@@ -4,7 +4,7 @@
 \alias{getABSignal}
 \title{Calculate Pearson correlations of smoothed eigenvectors}
 \usage{
-getABSignal(x, k = 2, iter = 2, squeeze = FALSE)
+getABSignal(x, k = 1, iter = 2, squeeze = FALSE)
 }
 \arguments{
 \item{x}{A list object from getCorMatrix}
@@ -23,9 +23,9 @@ This function is used to generate a list x to be passed to getABSignal
 }
 \examples{
 
-library(GenomicRanges)
+library(SummarizedExperiment)
 library(Homo.sapiens)
-library(mixOmics)
+library(BiocSingular)
 
 #Generate random genomic intervals of 1-1000 bp on chr1-22
 #Modified from https://www.biostars.org/p/225520/
