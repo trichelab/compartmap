@@ -4,21 +4,24 @@
 \alias{shrinkBins}
 \title{Employ an eBayes shrinkage approach for bin-level estimates for A/B inference}
 \usage{
-shrinkBins(x, prior.means = NULL, assay = c("atac", "array"),
-  chr = NULL, res = 1e+06, ...)
+shrinkBins(x, prior.means = NULL, chr = NULL, res = 1e+06,
+  targets = NULL, resample = FALSE, assay = c("array", "atac",
+  "bisulfite"))
 }
 \arguments{
-\item{x}{a RangedSummarizedExperiment}
+\item{x}{Input SummarizedExperiment object}
 
-\item{prior.means}{the means of the bin-level prior distribution}
+\item{prior.means}{The means of the bin-level prior distribution}
 
-\item{assay}{which assay this is}
+\item{chr}{The chromosome to operate on}
 
-\item{chr}{the chromosome to operate on}
+\item{res}{Resolution to perform the binning}
 
-\item{res}{resolution to perform the binning}
+\item{targets}{The column/sample/cell names to shrink towards}
 
-\item{...}{other parameters to pass to the internal functions}
+\item{resample}{Whether this is for resampling purposes}
+
+\item{assay}{What assay type this is ("array", "atac", "bisulfite")}
 }
 \value{
 A list object to pass to getCorMatrix
@@ -30,5 +33,10 @@ A list object to pass to getCorMatrix
 This function computes shrunken bin-level estimates using a James-Stein estimator, reformulated as an eBayes procedure
 }
 \examples{
+data("meth_array_450k_chr14", package = "compartmap")
+#impute to remove NAs
+imputed.array <- imputeKNN(array.data.chr14, assay = "array")
+#get the shrunken binned M-values
+shrunken.bin.array <- shrinkBins(imputed.array, chr = "chr14", assay = "array")
 
 }

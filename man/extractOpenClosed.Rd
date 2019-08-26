@@ -2,15 +2,25 @@
 % Please edit documentation in R/utils.R
 \name{extractOpenClosed}
 \alias{extractOpenClosed}
-\title{Title}
+\title{Get the open and closed compartment calls based on sign of singular values}
 \usage{
 extractOpenClosed(gr, cutoff = 0)
 }
 \arguments{
-\item{gr}{}
+\item{gr}{Input GRanges with associated mcols that represent singular values}
 
-\item{cutoff}{}
+\item{cutoff}{Threshold to define open and closed states}
+}
+\value{
+A vector of binary/categorical compartment states
 }
 \description{
-Title
+Get the open and closed compartment calls based on sign of singular values
+}
+\examples{
+
+dummy <- matrix(rnorm(10000), ncol=25)
+set.seed(1000)
+sing_vec <- getSVD(dummy, k = 1, sing.vec = "left")
+
 }
