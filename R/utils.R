@@ -214,6 +214,6 @@ flogit <- function(x, sqz=0.000001) {
 #' @import        gtools
 #'
 #' @export 
-fexpit <- function(x, sqz) {
+fexpit <- function(x, sqz=0.000001) {
   (((((inv.logit(x) * 2) - 1) / (1 - sqz)) + 1) / 2)
 }

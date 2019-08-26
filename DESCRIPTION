@@ -2,7 +2,7 @@ Package: compartmap
 Type: Package
 Title: A/B compartment inference from ATAC-seq and methylation array data
 Description: Compartmap performs shrunken A/B compartment inference from ATAC-seq and methylation arrays.
-Version: 1.5.0
+Version: 1.6.0
 Date: 2018-10-28
 Authors@R: c(person("Benjamin", "Johnson", role = c("aut", "cre"),
                     email = "ben.johnson@vai.org",),
@@ -14,13 +14,11 @@ BugReports: https://github.com/biobenkj/compartmap/issues
 Encoding: UTF-8
 License: GPL-3 + file LICENSE
 biocViews: Genetics, Epigenetics, ATACSeq, MethylSeq, MethylationArray
-Depends: R (>= 3.5.0),
-         minfi,
+Depends: R (>= 3.6.0),
+         SummarizedExperiment,
          Homo.sapiens,
-	 Mus.musculus,
-         mixOmics
-Imports: SummarizedExperiment,
-         GenomicRanges,
+	 Mus.musculus
+Imports: GenomicRanges,
          gtools,
          parallel,
          grid,

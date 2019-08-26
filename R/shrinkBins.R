@@ -5,14 +5,13 @@
 #'
 #' @details This function computes shrunken bin-level estimates using a James-Stein estimator, reformulated as an eBayes procedure
 #' 
-#' @param x a RangedSummarizedExperiment
-#' @param prior.means the means of the bin-level prior distribution
-#' @param assay which assay this is
-#' @param chr the chromosome to operate on
-#' @param res resolution to perform the binning
-#' @param targets the column/sample/cell names to shrink towards
-#' @param resample 
-#' @param ... other parameters to pass to the internal functions
+#' @param x Input SummarizedExperiment object
+#' @param prior.means The means of the bin-level prior distribution
+#' @param chr The chromosome to operate on
+#' @param res Resolution to perform the binning
+#' @param targets The column/sample/cell names to shrink towards
+#' @param resample Whether this is for resampling purposes
+#' @param assay What assay type this is ("array", "atac", "bisulfite")
 #'
 #' @return A list object to pass to getCorMatrix
 #' 
@@ -22,11 +21,16 @@
 #' @export
 #'
 #' @examples
+#' data("meth_array_450k_chr14", package = "compartmap")
+#' #impute to remove NAs
+#' imputed.array <- imputeKNN(array.data.chr14, assay = "array")
+#' #get the shrunken binned M-values
+#' shrunken.bin.array <- shrinkBins(imputed.array, chr = "chr14", assay = "array")
 #' 
 
 shrinkBins <- function(x, prior.means = NULL, chr = NULL,
                        res = 1e6, targets = NULL, resample = FALSE,
-                       assay = c("array", "atac", "bisulfite"), ...) {
+                       assay = c("array", "atac", "bisulfite")) {
   #match the assay args
   assay <- match.arg(assay)
   
@@ -43,15 +47,13 @@ shrinkBins <- function(x, prior.means = NULL, chr = NULL,
     }
 
   #bin the input
-  #atac counts are summed
-  if (assay == "atac") {
-    bin.mat <- getBinMatrix(x=as.matrix(cbind(assays(x)$counts, prior.means)),
-                            genloc=rowRanges(x), chr=chr, res=res, FUN=sum, ...)
-  } else {
-    #array and bisulfite values are taken as the median value
-    bin.mat <- getBinMatrix(x=as.matrix(cbind(assays(x)$counts, prior.means)),
-                            genloc=rowRanges(x), chr=chr, res=res, FUN=median, ...)
-  }
+  bin.mat <- suppressMessages(switch(assay,
+                                     atac = getBinMatrix(x=as.matrix(cbind(assays(x)$counts, prior.means)),
+                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=sum),
+                                     array = getBinMatrix(x=as.matrix(cbind(flogit(assays(x)$Beta), prior.means)),
+                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=median),
+                                     bisulfite = getBinMatrix(x=as.matrix(cbind(assays(x)$counts, prior.means)),
+                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=median)))
   
   #shrink the bins using a James-Stein Estimator
   x.shrink <- apply(bin.mat$x, 1, function(r) {
@@ -60,12 +62,12 @@ shrinkBins <- function(x, prior.means = NULL, chr = NULL,
     if (!is.null(targets)) {
       if (length(r.samps[targets]) == 1) {
         stop("Cannot perform targeted bin-level shrinkage with one target sample.")
-      }
-      switch(assay,
-             atac = .shrinkATAC(x=r.samps, prior=r.prior.m, targets=targets),
-             array = .shrinkArray(x=r.samps, prior=r.prior.m, targets=targets),
-             bisulfite = .shrinkBS(x=r.samps, prior=r.prior.m, targets=targets))
-    }})
+      }}
+    switch(assay,
+           atac = .shrinkATAC(x=r.samps, prior=r.prior.m, targets=targets),
+           array = .shrinkArrays(x=r.samps, prior=r.prior.m, targets=targets),
+           bisulfite = .shrinkBS(x=r.samps, prior=r.prior.m, targets=targets))
+    })
   
   return(list(gr=bin.mat$gr, x=x.shrink, gmeans=bin.mat$x[,"globalMean"]))
 }
@@ -87,13 +89,13 @@ shrinkBins <- function(x, prior.means = NULL, chr = NULL,
 #shrink bins in methylation arrays
 .shrinkArrays <- function(x, prior = NULL, targets = NULL) {
   if (!is.null(targets)) {
-    C <- sd(flogit(x[targets]))
+    C <- sd(x[targets])
   } else {
-    C <- sd(flogit(x))
+    C <- sd(x)
   }
-  prior.m <- flogit(prior)
+  prior.m <- prior
   #convert back to beta values
-  return(fexpit(prior.m + C*(flogit(x) - prior.m)))
+  return(prior.m + C*(x - prior.m))
 }
 
 #shrink bisulfite sequencing smoothed M-values
