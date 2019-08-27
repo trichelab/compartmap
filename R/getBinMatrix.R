@@ -12,12 +12,15 @@
 #' @param chr.end    End position (in bp) to be analyzed
 #' @param res    Binning resolution (in bp)
 #' @param FUN    Function to be used to summarize information within a bin
-#' @param genome    Genome corresponding to the input data ("hg19" or "mm10")
+#' @param genome    Genome corresponding to the input data ("hg19", "hg38", "mm9", "mm10")
 #' 
 #' @return    A list object to pass to getCorMatrix
 #' 
-#' @import    GenomicRanges
+#' @import    SummarizedExperiment
 #' @import    Homo.sapiens
+#' @import    Mus.musculus
+#' @import    BSgenome.Hsapiens.UCSC.hg38
+#' @import    BSgenome.Mmusculus.UCSC.mm9
 #' 
 #' @export 
 #' 
@@ -43,7 +46,9 @@
 #' #Bin counts
 #' bin.counts <- getBinMatrix(count.mat, makeGRangesFromDataFrame(random_genomic_int), chr = "chr14", genome = "hg19")
 
-getBinMatrix <- function(x, genloc, chr = "chr1", chr.start = 0, chr.end = NULL, res = 100000, FUN=sum, genome = "hg19"){
+getBinMatrix <- function(x, genloc, chr = "chr1", chr.start = 0,
+                         chr.end = NULL, res = 100000, FUN=sum,
+                         genome = c("hg19", "hg38", "mm9", "mm10")) {
   
   if (any(is.na(x))){
     stop("Matrix must not contain NAs")
@@ -52,13 +57,16 @@ getBinMatrix <- function(x, genloc, chr = "chr1", chr.start = 0, chr.end = NULL,
     stop("Provided GRanges must have length equal to the matrix number of rows")
   }
   
+  #which genome do we have
+  genome <- match.arg(genome)
+  
   if (is.null(chr.end)) {
-    if (genome == "hg19") {
-      #genome <- match.arg(genome)
-      #chr.end <- switch(genome,
-      #                  hg19 = seqlengths(Homo.sapiens)[chr],
-      #                  mm10 = seqlengths(Mus.musculus)[chr])
-      chr.end <- seqlengths(Homo.sapiens)[chr]
+    if (genome %in% c("hg19", "hg38", "mm9", "mm10")) {
+      chr.end <- switch(genome,
+                        hg19 = seqlengths(Homo.sapiens)[chr],
+                        hg38 = seqlengths(BSgenome.Hsapiens.UCSC.hg38),
+                        mm9 = seqlengths(BSgenome.Mmusculus.UCSC.mm9),
+                        mm10 = seqlengths(Mus.musculus)[chr])
     }
     else {
       message("Don't know what to do with ", genome)

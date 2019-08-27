@@ -17,14 +17,18 @@ biocViews: Genetics, Epigenetics, ATACSeq, MethylSeq, MethylationArray
 Depends: R (>= 3.6.0),
          SummarizedExperiment,
          Homo.sapiens,
-	 Mus.musculus
+	 Mus.musculus,
+	 BiocSingular,
+	 bsseq
 Imports: GenomicRanges,
          gtools,
          parallel,
          grid,
          pbapply,
 	 viridis,
-	 ggplot2
+	 ggplot2,
+	 DelayedMatrixStats,
+	 impute
 Suggests: covr,
           testthat,
           knitr
