@@ -10,8 +10,8 @@
 #' @param chr The chromosome to operate on
 #' @param res Resolution to perform the binning
 #' @param targets The column/sample/cell names to shrink towards
-#' @param resample Whether this is for resampling purposes
 #' @param assay What assay type this is ("array", "atac", "bisulfite")
+#' @param genome What genome are we working with ("hg19", "hg38", "mm9", "mm10")
 #'
 #' @return A list object to pass to getCorMatrix
 #' 
@@ -29,10 +29,14 @@
 #' 
 
 shrinkBins <- function(x, prior.means = NULL, chr = NULL,
-                       res = 1e6, targets = NULL, resample = FALSE,
-                       assay = c("array", "atac", "bisulfite")) {
+                       res = 1e6, targets = NULL,
+                       assay = c("array", "atac", "bisulfite"),
+                       genome = c("hg19", "hg38", "mm9", "mm10")) {
   #match the assay args
   assay <- match.arg(assay)
+  
+  #match the genome if given
+  genome <- match.arg(genome)
   
   #double check the obj class is compatible
   if (!checkAssayType(x)) stop("Input needs to be a SummarizedExperiment")
@@ -41,19 +45,18 @@ shrinkBins <- function(x, prior.means = NULL, chr = NULL,
   if (is.null(prior.means)) {
     prior.means <- getGlobalMeans(obj=x, targets=targets, assay=assay)
   }
-  #if we are resampling 
-  if (is.null(prior.means) & resample) {
-    prior.means <- .getResampledGlobalMeans(obj=x, targets=targets, assay=assay)
-    }
 
   #bin the input
   bin.mat <- suppressMessages(switch(assay,
                                      atac = getBinMatrix(x=as.matrix(cbind(assays(x)$counts, prior.means)),
-                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=sum),
+                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=sum,
+                                                         genome = genome),
                                      array = getBinMatrix(x=as.matrix(cbind(flogit(assays(x)$Beta), prior.means)),
-                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=median),
+                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=median,
+                                                         genome = genome),
                                      bisulfite = getBinMatrix(x=as.matrix(cbind(assays(x)$counts, prior.means)),
-                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=median)))
+                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=median,
+                                                         genome = genome)))
   
   #shrink the bins using a James-Stein Estimator
   x.shrink <- apply(bin.mat$x, 1, function(r) {

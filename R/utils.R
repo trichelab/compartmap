@@ -73,6 +73,7 @@ getOpenSeas <- function(gr) {
 #' @export
 #'
 #' @examples
+#' 
 maskArrays <- function(obj, genome = c("hg19", "hg38"), array.type = NULL) {
   #make sure input is sane
   if (!checkAssayType(obj)) stop("Input needs to be a SummarizedExperiment.")
@@ -142,6 +143,7 @@ getPMD <- function(obj, genome = c("hg19", "hg38")) {
 #'
 #' @param gr Input GRanges with associated mcols that represent singular values
 #' @param cutoff Threshold to define open and closed states
+#' @param assay The type of assay we are working with
 #'
 #' @return A vector of binary/categorical compartment states
 #' @import SummarizedExperiment
@@ -153,11 +155,14 @@ getPMD <- function(obj, genome = c("hg19", "hg38")) {
 #' set.seed(1000)
 #' sing_vec <- getSVD(dummy, k = 1, sing.vec = "left")
 #' 
-extractOpenClosed <- function(gr, cutoff = 0){
+extractOpenClosed <- function(gr, cutoff = 0,
+                              assay = c("array", "atac", "bisulfite")){
   #check for input to be GRanges
   if (!is(gr, "GRanges")) stop("Input needs to be a GRanges.")
-  if (!("pc" %in% names(mcols(gr)))) stop("Need to have an mcols column be names 'pc'.")
-  ifelse(gr$pc < cutoff, "open", "closed")
+  if (!("pc" %in% names(mcols(gr)))) stop("Need to have an mcols column be named 'pc'.")
+  assay <- match.arg(assay)
+  if (assay %in% c("array", "bisulfite")) ifelse(gr$pc < cutoff, "open", "closed")
+  if (assay == "atac") ifelse(gr$pc < cutoff, "closed", "open")
 }
 
 checkAssayType <- function(obj) {
@@ -216,4 +221,38 @@ flogit <- function(x, sqz=0.000001) {
 #' @export 
 fexpit <- function(x, sqz=0.000001) {
   (((((inv.logit(x) * 2) - 1) / (1 - sqz)) + 1) / 2)
+}
+
+#' Get the chromosomes from an object
+#'
+#' @param obj Input SummarizedExperiment object
+#'
+#' @return A character vector of chromosomes present in an object
+#' @import SummarizedExperiment
+#' @export
+#'
+#' @examples
+#' data("meth_array_450k_chr14", package = "compartmap")
+#' getChrs(array.data.chr14)
+#' 
+
+getChrs <- function(obj) {
+  #get the chromosomes present in the object
+  return(seqlevels(obj)[seqlevels(obj) %in% seqnames(obj)])
+}
+
+#' Remove bootstrap estimates that failed
+#'
+#' @param obj Input list object with elements 'pc' and 'gr'
+#'
+#' @return A filtered list object
+#' @export
+
+removeEmptyBoots <- function(obj) {
+  #remove NAs from a bootstrap list
+  #this can happen if the correlation between the bins and eigenvector fails
+  #theoretically we can recover these but need an additional utility to find consensus
+  na.filt <- unlist(lapply(obj, function(n) ifelse(any(is.na(n$pc)), TRUE, FALSE)))
+  obj <- obj[na.filt]
+  return(obj)
 }

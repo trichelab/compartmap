@@ -1,34 +1,96 @@
-bootstrapCompartments <- function(se.obj, bootstrap.samples = 1000, with.ci = FALSE) {
-  #function for nonparametric bootstrap of compartments to compute 95% CI
-  
+#' Non-parametric bootstrapping of compartments and summarization of bootstraps/compute confidence intervals
+#'
+#' @name bootstrapCompartments
+#'
+#' @param obj List object of computed compartments for a sample with 'pc' and 'gr' as elements
+#' @param original.obj The original, full input SummarizedExperiment of all samples/cells
+#' @param bootstrap.samples How many bootstraps to run
+#' @param chr Which chromosome to operate on
+#' @param assay What sort of assay are we working on
+#' @param parallel Whether to run the bootstrapping in parallel
+#' @param cores How many cores to use for parallel processing
+#' @param targets Targets to shrink towards
+#' @param res The compartment resolution
+#' @param genome What genome are we working on
+#' @param q What sort of confidence intervals are we computing (e.g. 0.95 for 95% CI)
+#'
+#' @return Compartment estimates with summarized bootstraps and confidence intervals
+#' @import parallel
+#' @import SummarizedExperiment
+#' @export
+#'
+#' @examples
+#' 
+bootstrapCompartments <- function(obj, original.obj, bootstrap.samples = 1000,
+                                  chr = "chr14", assay = c("array", "atac", "bisulfite"),
+                                  parallel = TRUE, cores = 2, targets = NULL, res = 1e6,
+                                  genome = c("hg19", "hg38", "mm9", "mm10"), q = 0.95) {
+  #function for nonparametric bootstrap of compartments and compute 95% CIs
   #check input
-  if (!is(se.obj, "RangedSummarizedExperiment") | !is(se.obj, "SummarizedExperiment")) {
-    stop("Input needs to be a (Ranged)SummarizedExperiment object.")
+  #match the assay args
+  assay <- match.arg(assay)
+  
+  #double check the obj class is compatible
+  if (!checkAssayType(obj)) stop("Input needs to be a SummarizedExperiment")
+  
+  #check the names of the assays
+  if (!any(getAssayNames(obj) %in% c("Beta", "counts"))) {
+    stop("The assay slot should contain either 'Beta' for arrays or 'counts' for atac/bisulfite.")
   }
   
-  #get the proportion of samples to take everytime
-  cells.to.sample <- ceiling(ncol(se.obj) * sample.prop)
-  if (cells.to.sample == ncol(se.obj)) stop("Somehow we are trying to sample all columns of the matrix. Decrease the sample.prop.")
-  if (cells.to.sample == 1) stop("Too few samples to use for bootstrapping. Increase the sample.prop.")
+  #if we are using targeted means
+  original.obj <- original.obj[,targets]
+  if (ncol(original.obj) < 6) stop("We need more than 5 samples to bootstrap with for the results to be meaningful.")
   
-  #resample the global means with replacement
-  
-  return()
-}
-
-#A helper function to reconstruct the GRanges object for binning if not supplied from the input matrix
-#These *should* be the rownames of the input matrix
-.buildRanges <- function(obj) {
-  if (!is.null(rownames(obj))) {
-    message("Constructing rowRanges from the input matrix...")
-    snames <- sapply(strsplit(rownames(obj), ":"), `[`, 1)
-    loc <- as.numeric(sapply(strsplit(rownames(obj), ":"), `[`, 2))
-    myranges <- GRanges(seqnames = snames,
-                        strand = "*",
-                        ranges = IRanges(start = loc, width = 1))
+  if (!parallel) {
+    message("Not bootstrapping in parallel will take a long time...")
+    #bootstrap and recompute compartments
+    resamp.compartments <- lapply(1:bootstrap.samples, function(b) {
+      #resample the global means with replacement
+      message("Working on bootstrap ", b)
+      resamp.mat <- switch(assay,
+                           array = .resampleMatrix(assay(original.obj)$Beta),
+                           atac = .resampleMatrix(assay(original.obj)$counts),
+                           bisulfite = .resampleMatrix(assay(original.obj)$counts))
+      #get the shrunken bins with new global mean
+      s.bins <- shrinkBins(obj, prior.means = getGlobalMeans(resamp.mat, assay = assay),
+                           chr = chr, res = res, assay = assay, genome = genome)
+      cor.bins <- getCorMatrix(s.bins, squeeze = TRUE)
+      #Stupid check for perfect correlation with global mean
+      if (any(is.na(cor.bins$binmat.cor))) {
+        absig <- matrix(rep(NA, nrow(cor.bins$binmat.cor)))
+      } else {
+        absig <- getABSignal(cor.bins)
+      }
+      return(absig)
+    })
+  } else {
+    message("Bootstrapping in parallel with ", cores, " cores.")
+    #bootstrap and recompute compartments
+    resamp.compartments <- mclapply(1:bootstrap.samples, function(b) {
+      #resample the global means with replacement
+      resamp.mat <- switch(assay,
+                           array = .resampleMatrix(assay(original.obj)$Beta),
+                           atac = .resampleMatrix(assay(original.obj)$counts),
+                           bisulfite = .resampleMatrix(assay(original.obj)$counts))
+      #get the shrunken bins with new global mean
+      s.bins <- shrinkBins(obj, prior.means = getGlobalMeans(resamp.mat, targets = targets, assay = assay),
+                           chr = chr, res = res, assay = assay, genome = genome)
+      cor.bins <- getCorMatrix(s.bins, squeeze = TRUE)
+      #Stupid check for perfect correlation with global mean
+      if (any(is.na(cor.bins$binmat.cor))) {
+        absig <- matrix(rep(NA, nrow(cor.bins$binmat.cor)))
+      } else {
+        absig <- getABSignal(cor.bins)
+      }
+      return(absig)
+    }, mc.cores = cores)
   }
-  else (stop("Could not reconstruct the rowRanges from the input matrix..."))
-  return(myranges)
+  
+  #summarize the bootstraps and compute confidence intervals
+  resamp.compartments <- summarizeBootstraps(resamp.compartments, original.obj,
+                                             q = q, assay = assay)
+  return(resamp.compartments)
 }
 
 #helper function to re-sample

@@ -4,12 +4,15 @@
 \alias{extractOpenClosed}
 \title{Get the open and closed compartment calls based on sign of singular values}
 \usage{
-extractOpenClosed(gr, cutoff = 0)
+extractOpenClosed(gr, cutoff = 0, assay = c("array", "atac",
+  "bisulfite"))
 }
 \arguments{
 \item{gr}{Input GRanges with associated mcols that represent singular values}
 
 \item{cutoff}{Threshold to define open and closed states}
+
+\item{assay}{The type of assay we are working with}
 }
 \value{
 A vector of binary/categorical compartment states

@@ -38,7 +38,7 @@ A p x n matrix (samples as columns and compartments as rows) to pass to embed_co
 \code{getCompartments} returns estimated A/B compartments from ATAC-seq and methylation array data
 }
 \details{
-This is a wrapper function to perform A/B compartment inference. Compartmentalizer implements a Stein estimator to shrink per-sample compartment estimates towards a global mean. The expected input for this function can be generated using packages like SeSAMe and ATACseeker.
+This is a wrapper function to perform A/B compartment inference. Compartmap implements a Stein estimator to shrink per-sample compartment estimates towards a global mean. The expected input for this function can be generated using packages like SeSAMe, biscuiteer, and csaw.
 }
 \examples{
 

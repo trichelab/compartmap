@@ -22,3 +22,6 @@ A subsetted SummarizedExperiment without masked probes
 Mask off probes using annotations MASK_general from Zhou et. al NAR 2017
 https://doi.org/10.1093/nar/gkw967
 }
+\examples{
+
+}

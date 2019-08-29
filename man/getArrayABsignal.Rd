@@ -4,32 +4,44 @@
 \alias{getArrayABsignal}
 \title{Estimate A/B compartments from methylation array data}
 \usage{
-getArrayABsignal(obj, res = 1e+06, parallel = FALSE, allchrs = FALSE,
-  chr = NULL, targets = NULL, unitarize = FALSE, ...)
+getArrayABsignal(obj, res = 1e+06, parallel = TRUE, chr = NULL,
+  targets = NULL, preprocess = TRUE, cores = 1, genome = c("hg19",
+  "hg38", "mm9", "mm10"), other = NULL, array.type = c("hm450",
+  "EPIC"), bulk = FALSE, boot.parallel = FALSE, boot.cores = 1)
 }
 \arguments{
-\item{obj}{Input GenomicRatioSet object}
+\item{obj}{Input SummarizedExperiment object}
 
-\item{res}{Compartment resolution (in bp)}
+\item{res}{Compartment resolution in bp}
 
-\item{parallel}{Should the inference be done in parallel?}
+\item{parallel}{Whether to run samples in parallel}
 
-\item{allchrs}{Whether all autosomes should be used for A/B inference}
+\item{chr}{What chromosome to work on (leave as NULL to run on all chromosomes)}
 
-\item{chr}{Specific chromosomes to analyze}
+\item{targets}{Samples/cells to shrink towards}
 
-\item{targets}{Specify samples to use as shrinkage targets}
+\item{preprocess}{Whether to preprocess the arrays prior to compartment inference}
 
-\item{unitarize}{Whether or not to unitarize the output (default is FALSE)}
+\item{cores}{How many cores to use when running samples in parallel}
 
-\item{...}{Additional arguments}
+\item{genome}{What genome to work on ("hg19", "hg38", "mm9", "mm10")}
+
+\item{other}{Another arbitrary genome to compute compartments on}
+
+\item{array.type}{What type of array is this ("hm450", "EPIC")}
+
+\item{bulk}{Whether to treat this as a bulk set of samples}
+
+\item{boot.parallel}{Whether to run the bootstrapping in parallel}
+
+\item{boot.cores}{How many cores to use for the bootstrapping}
 }
 \value{
-A p x n matrix (samples as columns and compartments as rows) of compartments
+A RaggedExperiment of inferred compartments
 }
 \description{
 \code{getArrayABsignal} returns estimated A/B compartments from methylation array data.
 }
-\details{
-This function is modified from the minfi::compartments to infer A/B compartments from array data
+\examples{
+
 }

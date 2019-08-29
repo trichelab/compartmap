@@ -5,8 +5,8 @@
 \title{Employ an eBayes shrinkage approach for bin-level estimates for A/B inference}
 \usage{
 shrinkBins(x, prior.means = NULL, chr = NULL, res = 1e+06,
-  targets = NULL, resample = FALSE, assay = c("array", "atac",
-  "bisulfite"))
+  targets = NULL, assay = c("array", "atac", "bisulfite"),
+  genome = c("hg19", "hg38", "mm9", "mm10"))
 }
 \arguments{
 \item{x}{Input SummarizedExperiment object}
@@ -19,9 +19,9 @@ shrinkBins(x, prior.means = NULL, chr = NULL, res = 1e+06,
 
 \item{targets}{The column/sample/cell names to shrink towards}
 
-\item{resample}{Whether this is for resampling purposes}
-
 \item{assay}{What assay type this is ("array", "atac", "bisulfite")}
+
+\item{genome}{What genome are we working with ("hg19", "hg38", "mm9", "mm10")}
 }
 \value{
 A list object to pass to getCorMatrix
