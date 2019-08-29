@@ -16,8 +16,11 @@ License: GPL-3 + file LICENSE
 biocViews: Genetics, Epigenetics, ATACSeq, MethylSeq, MethylationArray
 Depends: R (>= 3.6.0),
          SummarizedExperiment,
+	 RaggedExperiment,
          Homo.sapiens,
+	 BSgenome.Hsapiens.UCSC.hg38,
 	 Mus.musculus,
+	 BSgenome.Mmusculus.UCSC.mm9,
 	 BiocSingular,
 	 bsseq
 Imports: GenomicRanges,
