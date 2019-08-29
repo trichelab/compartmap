@@ -12,7 +12,7 @@ summarizeBootstraps(boot.list, est.ab, q = 0.95, assay = c("array",
 
 \item{est.ab}{The original compartment calls}
 
-\item{q}{Confidence interval to compute (0.95 for 95% CI)}
+\item{q}{Confidence interval to compute (0.95 for 95\% CI)}
 
 \item{assay}{Type of assay we are working with}
 }

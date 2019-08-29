@@ -10,7 +10,7 @@
 #'
 #' @param n1  number of successes/ones 
 #' @param n0  number of failures/zeroes
-#' @param q   quantile for eventual CI (e.g. 0.95 for a 95% binomial CI)
+#' @param q   quantile for eventual CI (e.g. 0.95 for a 95\% binomial CI)
 #'
 #' @return    the "effective" sample size for smoothed CIs
 #'
@@ -20,7 +20,7 @@
 #'
 #' @param n1  number of successes/ones 
 #' @param n0  number of failures/zeroes
-#' @param q   quantile for eventual CI (e.g. 0.95 for a 95% binomial CI)
+#' @param q   quantile for eventual CI (e.g. 0.95 for a 95\% binomial CI)
 #'
 #' @return    the "approximate" success probability for a smoothed CIs
 #' 
@@ -30,9 +30,9 @@
 #' 
 #' @param n1  number of successes/ones 
 #' @param n0  number of failures/zeroes
-#' @param q   quantile for eventual CI (e.g. 0.95 for a 95% binomial CI)
+#' @param q   quantile for eventual CI (e.g. 0.95 for a 95\% binomial CI)
 #'
-#' @return    the "approximate" (q*100)% confidence interval for (p|n1,n0,q)
+#' @return    the "approximate" (q*100)\% confidence interval for (p|n1,n0,q)
 #' @export
 #' 
 #' @examples 

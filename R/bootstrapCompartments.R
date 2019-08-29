@@ -12,7 +12,7 @@
 #' @param targets Targets to shrink towards
 #' @param res The compartment resolution
 #' @param genome What genome are we working on
-#' @param q What sort of confidence intervals are we computing (e.g. 0.95 for 95% CI)
+#' @param q What sort of confidence intervals are we computing (e.g. 0.95 for 95\% CI)
 #'
 #' @return Compartment estimates with summarized bootstraps and confidence intervals
 #' @import parallel

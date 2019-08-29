@@ -30,7 +30,7 @@ bootstrapCompartments(obj, original.obj, bootstrap.samples = 1000,
 
 \item{genome}{What genome are we working on}
 
-\item{q}{What sort of confidence intervals are we computing (e.g. 0.95 for 95% CI)}
+\item{q}{What sort of confidence intervals are we computing (e.g. 0.95 for 95\% CI)}
 }
 \value{
 Compartment estimates with summarized bootstraps and confidence intervals
