@@ -105,7 +105,6 @@ maskArrays <- function(obj, genome = c("hg19", "hg38"), array.type = NULL) {
       mask.rds <- readRDS(system.file("extdata", mask.file, package = "compartmap"))
     }
   } else {
-    browser()
     genome <- match.arg(genome)
     mask.file <- paste0(array.type, ".", genome, ".manifest.rds")
     mask.rds <- readRDS(system.file("extdata", mask.file, package = "compartmap"))
