@@ -54,8 +54,13 @@ bootstrapCompartments <- function(obj, original.obj, bootstrap.samples = 1000,
                            atac = .resampleMatrix(assays(original.obj)$counts),
                            bisulfite = .resampleMatrix(assays(original.obj)$counts))
       #turn back into SummarizedExperiment
-      resamp.se <- SummarizedExperiment(assays=SimpleList(Beta=resamp.mat),
-                                        rowRanges = rowRanges(original.obj))
+      resamp.se <- switch(assay,
+                          array = SummarizedExperiment(assays=SimpleList(Beta=resamp.mat),
+                                                       rowRanges = rowRanges(original.obj)),
+                          atac = SummarizedExperiment(assays=SimpleList(counts=resamp.mat),
+                                                      rowRanges = rowRanges(original.obj)),
+                          bisulfite = SummarizedExperiment(assays=SimpleList(counts=resamp.map),
+                                                           rowRanges = rowRanges(original.obj)))
       #get the shrunken bins with new global mean
       s.bins <- shrinkBins(obj, original.obj, prior.means = getGlobalMeans(resamp.se, targets = targets, assay = assay),
                            chr = chr, res = res, assay = assay, genome = genome)
