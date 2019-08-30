@@ -4,7 +4,8 @@
 \alias{getABSignal}
 \title{Calculate Pearson correlations of smoothed eigenvectors}
 \usage{
-getABSignal(x, k = 1, iter = 2, squeeze = FALSE)
+getABSignal(x, k = 1, iter = 2, squeeze = FALSE, assay = c("array",
+  "atac", "bisulfite"))
 }
 \arguments{
 \item{x}{A list object from getCorMatrix}
@@ -14,6 +15,8 @@ getABSignal(x, k = 1, iter = 2, squeeze = FALSE)
 \item{iter}{Number of iterations for moving average smoothing (default = 2)}
 
 \item{squeeze}{Whether squeezing was used (implies Fisher's Z transformation)}
+
+\item{assay}{What kind of assay are we working on ("array", "atac", "bisulfite")}
 }
 \value{
 A list x to pass to getABSignal

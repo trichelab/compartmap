@@ -5,9 +5,10 @@
 \title{Estimate A/B compartments from methylation array data}
 \usage{
 getArrayABsignal(obj, res = 1e+06, parallel = TRUE, chr = NULL,
-  targets = NULL, preprocess = TRUE, cores = 1, genome = c("hg19",
-  "hg38", "mm9", "mm10"), other = NULL, array.type = c("hm450",
-  "EPIC"), bulk = FALSE, boot.parallel = FALSE, boot.cores = 1)
+  targets = NULL, preprocess = TRUE, cores = 1, bootstrap = TRUE,
+  num.bootstraps = 1000, genome = c("hg19", "hg38", "mm9", "mm10"),
+  other = NULL, array.type = c("hm450", "EPIC"), bulk = FALSE,
+  boot.parallel = FALSE, boot.cores = 1)
 }
 \arguments{
 \item{obj}{Input SummarizedExperiment object}
@@ -23,6 +24,10 @@ getArrayABsignal(obj, res = 1e+06, parallel = TRUE, chr = NULL,
 \item{preprocess}{Whether to preprocess the arrays prior to compartment inference}
 
 \item{cores}{How many cores to use when running samples in parallel}
+
+\item{bootstrap}{Whether we should perform bootstrapping of inferred compartments}
+
+\item{num.bootstraps}{How many bootstraps to run}
 
 \item{genome}{What genome to work on ("hg19", "hg38", "mm9", "mm10")}
 

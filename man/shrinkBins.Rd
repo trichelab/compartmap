@@ -4,12 +4,14 @@
 \alias{shrinkBins}
 \title{Employ an eBayes shrinkage approach for bin-level estimates for A/B inference}
 \usage{
-shrinkBins(x, prior.means = NULL, chr = NULL, res = 1e+06,
-  targets = NULL, assay = c("array", "atac", "bisulfite"),
-  genome = c("hg19", "hg38", "mm9", "mm10"))
+shrinkBins(x, original.x, prior.means = NULL, chr = NULL,
+  res = 1e+06, targets = NULL, assay = c("array", "atac",
+  "bisulfite"), genome = c("hg19", "hg38", "mm9", "mm10"))
 }
 \arguments{
 \item{x}{Input SummarizedExperiment object}
+
+\item{original.x}{Full sample set SummarizedExperiment object}
 
 \item{prior.means}{The means of the bin-level prior distribution}
 
