@@ -48,7 +48,6 @@ bootstrapCompartments <- function(obj, original.obj, bootstrap.samples = 1000,
     #bootstrap and recompute compartments
     resamp.compartments <- lapply(1:bootstrap.samples, function(b) {
       #resample the global means with replacement
-      browser()
       message("Working on bootstrap ", b)
       resamp.mat <- switch(assay,
                            array = .resampleMatrix(assays(original.obj)$Beta),
@@ -65,7 +64,7 @@ bootstrapCompartments <- function(obj, original.obj, bootstrap.samples = 1000,
       if (any(is.na(cor.bins$binmat.cor))) {
         absig <- matrix(rep(NA, nrow(cor.bins$binmat.cor)))
       } else {
-        absig <- getABSignal(cor.bins)
+        absig <- getABSignal(cor.bins, assay = assay)
       }
       return(absig)
     })
@@ -89,14 +88,14 @@ bootstrapCompartments <- function(obj, original.obj, bootstrap.samples = 1000,
       if (any(is.na(cor.bins$binmat.cor))) {
         absig <- matrix(rep(NA, nrow(cor.bins$binmat.cor)))
       } else {
-        absig <- getABSignal(cor.bins)
+        absig <- getABSignal(cor.bins, assay = assay)
       }
       return(absig)
     }, mc.cores = cores)
   }
   
   #summarize the bootstraps and compute confidence intervals
-  resamp.compartments <- summarizeBootstraps(resamp.compartments, obj.svd,
+  resamp.compartments <- summarizeBootstraps(resamp.compartments, svd,
                                              q = q, assay = assay)
   return(resamp.compartments)
 }
