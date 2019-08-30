@@ -170,42 +170,51 @@ extractOpenClosed <- function(gr, cutoff = 0,
   if (assay == "atac") return(ifelse(gr$pc < cutoff, "closed", "open"))
 }
 
-#' Title
+#' Check if the assay is a SummarizedExperiment
 #'
-#' @param obj 
+#' @param obj Input object
 #'
-#' @return
+#' @return Boolean
 #' @export
 #'
 #' @examples
+#' data("meth_array_450k_chr14", package = "compartmap")
+#' checkAssayType(array.data.chr14)
+
 checkAssayType <- function(obj) {
   #helper function to check the class of an object
   is(obj, "SummarizedExperiment")
 }
 
-#' Title
+#' Get the assay names from a SummarizedExperiment object
 #'
-#' @param se 
+#' @param se Input SummarizedExperiment object
 #'
-#' @return
+#' @return The names of the assays
 #' @export
 #'
 #' @examples
+#' data("meth_array_450k_chr14", package = "compartmap")
+#' getAssayNames(array.data.chr14)
+
 getAssayNames <- function(se) {
   #helper function to check the assay slot names
   names(assays(se))
 }
 
-#' Title
+#' Remove rows with NAs exceeding a threshold
 #'
-#' @param se 
-#' @param rowmax 
-#' @param assay 
+#' @param se Input SummarizedExperiment object
+#' @param rowmax The maximum NAs allowed in a row as a fraction
+#' @param assay The type of assay we are working with
 #'
-#' @return
+#' @return A filtered matrix
 #' @export
 #'
 #' @examples
+#' data("meth_array_450k_chr14", package = "compartmap")
+#' cleanAssayRows(array.data.chr14, assay = "array")
+
 cleanAssayRows <- function(se, rowmax = 0.5,
                            assay = c("array", "atac", "bisulfite")) {
   assay <- match.arg(assay)
@@ -215,16 +224,18 @@ cleanAssayRows <- function(se, rowmax = 0.5,
          bisulfite = se[rowMeans(is.na(assays(se)$counts)) < rowmax,])
 }
 
-#' Title
+#' Remove columns/cells/samples with NAs exceeding a threshold
 #'
-#' @param se 
-#' @param colmax 
-#' @param assay 
+#' @param se Input SummarizedExperiment object
+#' @param colmax The maximum number of NAs allowed as a fraction
+#' @param assay The type of assay we are working with
 #'
-#' @return
+#' @return A filtered matrix
 #' @export
 #'
 #' @examples
+#' data("meth_array_450k_chr14", package = "compartmap")
+#' cleanAssayCols(array.data.chr.14, assay = "array")
 cleanAssayCols <- function(se, colmax = 0.8,
                            assay = c("array", "atac", "bisulfite")) {
   assay <- match.arg(assay)
