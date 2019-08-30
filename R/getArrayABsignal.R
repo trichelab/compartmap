@@ -103,6 +103,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   if (parallel & isFALSE(bulk)) {
     array.compartments <- mclapply(columns, function(s) {
       obj.sub <- obj[,s]
+      message("Working on ", s)
       sort(unlist(as(lapply(chr, function(c) arrayCompartments(obj.sub, obj, res = res,
                                                                chr = c, targets = targets, genome = genome,
                                                                prior.means = gmeans, bootstrap = bootstrap,
@@ -114,6 +115,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   if (isFALSE(bulk)) {
     array.compartments <- lapply(columns, function(s) {
       obj.sub <- obj[,s]
+      message("Working on ", s)
       sort(unlist(as(lapply(chr, function(c) arrayCompartments(obj.sub, obj, res = res,
                                                                chr = c, targets = targets, genome = genome,
                                                                prior.means = gmeans, bootstrap = bootstrap,

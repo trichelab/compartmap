@@ -289,7 +289,10 @@ fexpit <- function(x, sqz=0.000001) {
 
 getChrs <- function(obj) {
   #get the chromosomes present in the object
-  return(seqlevels(obj)[seqlevels(obj) %in% seqnames(obj)])
+  sl <- seqlevels(obj)
+  sl.filt <- seqlevels(obj) %in% seqnames(obj)
+  sl <- sl[sl.filt]
+  return(sl)
 }
 
 #' Remove bootstrap estimates that failed
