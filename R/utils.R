@@ -90,7 +90,7 @@ maskArrays <- function(obj, genome = c("hg19", "hg38"), array.type = NULL) {
       if (is.null(array.type)) stop("Couldn't figure out if this was EPIC or hm450")
       genome <- strsplit(annotation, "\\.")$annotation[2]
       mask.file <- paste0(array.type, ".", genome, ".manifest.rds")
-      mask.rds <- readRDS(system.file(paste0("inst/extdata/", mask.file), package = "compartmap"))
+      mask.rds <- readRDS(system.file("extdata", mask.file, package = "compartmap"))
     } else {
       message("Attempting to guess what kind of methylation array this is (EPIC or hm450)...")
       if (nrow(obj) < 450e3) {
@@ -102,12 +102,13 @@ maskArrays <- function(obj, genome = c("hg19", "hg38"), array.type = NULL) {
       }
       genome <- match.arg(genome)
       mask.file <- paste0(array.type, ".", genome, ".manifest.rds")
-      mask.rds <- readRDS(system.file(paste0("inst/extdata/", mask.file), package = "compartmap"))
+      mask.rds <- readRDS(system.file("extdata", mask.file, package = "compartmap"))
     }
   } else {
+    browser()
     genome <- match.arg(genome)
     mask.file <- paste0(array.type, ".", genome, ".manifest.rds")
-    mask.rds <- readRDS(system.file(paste0("inst/extdata/", mask.file), package = "compartmap"))
+    mask.rds <- readRDS(system.file("extdata", mask.file, package = "compartmap"))
   }
   #mask the probes
   #subet to general mask
@@ -169,16 +170,42 @@ extractOpenClosed <- function(gr, cutoff = 0,
   if (assay == "atac") return(ifelse(gr$pc < cutoff, "closed", "open"))
 }
 
+#' Title
+#'
+#' @param obj 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 checkAssayType <- function(obj) {
   #helper function to check the class of an object
   is(obj, "SummarizedExperiment")
 }
 
+#' Title
+#'
+#' @param se 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 getAssayNames <- function(se) {
   #helper function to check the assay slot names
   names(assays(se))
 }
 
+#' Title
+#'
+#' @param se 
+#' @param rowmax 
+#' @param assay 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 cleanAssayRows <- function(se, rowmax = 0.5,
                            assay = c("array", "atac", "bisulfite")) {
   assay <- match.arg(assay)
@@ -188,6 +215,16 @@ cleanAssayRows <- function(se, rowmax = 0.5,
          bisulfite = se[rowMeans(is.na(assays(se)$counts)) < rowmax,])
 }
 
+#' Title
+#'
+#' @param se 
+#' @param colmax 
+#' @param assay 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 cleanAssayCols <- function(se, colmax = 0.8,
                            assay = c("array", "atac", "bisulfite")) {
   assay <- match.arg(assay)
