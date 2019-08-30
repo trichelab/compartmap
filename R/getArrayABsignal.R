@@ -155,7 +155,6 @@ preprocessArrays <- function(obj, res = 1e6,
   
   #subset the array to open sea CpGs
   obj.opensea <- filterOpenSea(obj, genome = genome, other = other)
-  
   #mask off bad probes for human arrays
   #this is for making sure these probes are gone if not
   #analyzed by SeSAMe which will do it natively
