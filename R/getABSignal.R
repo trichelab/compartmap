@@ -6,6 +6,7 @@
 #' @param k    Value of k for smoothing (default = 2)
 #' @param iter    Number of iterations for moving average smoothing (default = 2)
 #' @param squeeze    Whether squeezing was used (implies Fisher's Z transformation)
+#' @param assay What kind of assay are we working on ("array", "atac", "bisulfite")
 #' 
 #' @return    A list x to pass to getABSignal
 #' 
@@ -42,7 +43,8 @@
 #' #Get A/B signal
 #' absignal <- getABSignal(bin.cor.counts)
 
-getABSignal <- function(x, k = 1, iter = 2, squeeze = FALSE){
+getABSignal <- function(x, k = 1, iter = 2, squeeze = FALSE,
+                        assay = c("array", "atac", "bisulfite")){
   message("Calculating eigenvectors...")
   pc <- getSVD(x$binmat.cor, sing.vec = "right")
   if (squeeze) pc <- ifisherZ(pc)
@@ -51,6 +53,6 @@ getABSignal <- function(x, k = 1, iter = 2, squeeze = FALSE){
   message("Done smoothing...")
   gr <- x$gr
   gr$pc <- pc
-  gr$compartments <- extractOpenClosed(pc)
+  gr$compartments <- extractOpenClosed(gr, assay = assay)
   return(gr)
 }

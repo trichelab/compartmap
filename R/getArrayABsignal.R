@@ -10,6 +10,8 @@
 #' @param targets Samples/cells to shrink towards
 #' @param preprocess Whether to preprocess the arrays prior to compartment inference
 #' @param cores How many cores to use when running samples in parallel
+#' @param bootstrap Whether we should perform bootstrapping of inferred compartments
+#' @param num.bootstraps How many bootstraps to run
 #' @param genome What genome to work on ("hg19", "hg38", "mm9", "mm10")
 #' @param other Another arbitrary genome to compute compartments on
 #' @param array.type What type of array is this ("hm450", "EPIC")
@@ -30,6 +32,7 @@
 #' 
 getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                              targets = NULL, preprocess = TRUE, cores = 1,
+                             bootstrap = TRUE, num.bootstraps = 1000,
                              genome = c("hg19", "hg38", "mm9", "mm10"),
                              other = NULL, array.type = c("hm450", "EPIC"),
                              bulk = FALSE, boot.parallel = FALSE, boot.cores = 1) {
@@ -47,7 +50,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     #get what chromosomes we want
     chr <- getChrs(obj)
   }
-  
+
   #get the column names
   if (is.null(colnames(obj))) stop("colnames needs to be sample names.")
   columns <- colnames(obj)
@@ -62,7 +65,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     #this is the main analysis function for computing compartments from arrays
     #make sure the input is sane
     if (!checkAssayType(obj)) stop("Input needs to be a SummarizedExperiment")
-    
+
     #what genome do we have
     genome <- match.arg(genome)
     
@@ -70,7 +73,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     if (parallel) options(mc.cores = cores)
     
     #get the shrunken bins
-    obj.bins <- shrinkBins(obj, prior.means = prior.means, chr = chr,
+    obj.bins <- shrinkBins(obj, original.obj, prior.means = prior.means, chr = chr,
                            res = res, targets = targets, assay = "array",
                            genome = genome)
     #compute correlations
@@ -79,27 +82,27 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       obj.svd <- matrix(rep(NA, nrow(obj.cor$binmat.cor)))
     } else {
       #compute SVD of correlation matrix
-      obj.svd <- getABSignal(obj.cor)
+      obj.svd <- getABSignal(obj.cor, assay = "array")
     }
-    
+
     if (isFALSE(bootstrap)) return(obj.svd)
     
     #bootstrap the estimates
     #always compute confidence intervals too
-    obj.bootstrap <- bootstrapCompartments(obj.svd, original.obj, bootstrap.samples = num.bootstraps,
-                                           chr = chr, assay = assay, parallel = parallel, cores = cores,
-                                           targets = targets, res = res, genome = genome, q = 0.95)
+    obj.bootstrap <- bootstrapCompartments(obj, original.obj, bootstrap.samples = num.bootstraps,
+                                           chr = chr, assay = "array", parallel = parallel, cores = cores,
+                                           targets = targets, res = res, genome = genome, q = 0.95, svd = obj.svd)
     
     #combine and return
     return(obj.bootstrap)
   }
   
   #initialize global means
-  gmeans <- getGlobalMeans(obj, targets = targets, assay = assay)
+  gmeans <- getGlobalMeans(obj, targets = targets, assay = "array")
   
-  if (parallel & is.null(bulk)) {
+  if (parallel & isFALSE(bulk)) {
     array.compartments <- mclapply(columns, function(s) {
-      obj.sub <- obj[,columns]
+      obj.sub <- obj[,s]
       sort(unlist(as(lapply(chr, function(c) arrayCompartments(obj.sub, obj, res = res,
                                                                chr = c, targets = targets, genome = genome,
                                                                prior.means = gmeans, bootstrap = bootstrap,
@@ -108,9 +111,9 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     }, mc.cores = cores)
   }
   
-  if (is.null(bulk)) {
+  if (isFALSE(bulk)) {
     array.compartments <- lapply(columns, function(s) {
-      obj.sub <- obj[,columns]
+      obj.sub <- obj[,s]
       sort(unlist(as(lapply(chr, function(c) arrayCompartments(obj.sub, obj, res = res,
                                                                chr = c, targets = targets, genome = genome,
                                                                prior.means = gmeans, bootstrap = bootstrap,
@@ -151,7 +154,6 @@ preprocessArrays <- function(obj, res = 1e6,
   genome <- match.arg(genome)
   
   #subset the array to open sea CpGs
-  message("Subsetting to open sea CpG loci.")
   obj.opensea <- filterOpenSea(obj, genome = genome, other = other)
   
   #mask off bad probes for human arrays
@@ -165,7 +167,7 @@ preprocessArrays <- function(obj, res = 1e6,
   
   #convert things to M-values
   #check the names of the assays
-  if (!(getAssayNames(obj.opensea) %in% c("Beta"))) {
+  if (!any(getAssayNames(obj.opensea) %in% c("Beta"))) {
     stop("The assays slot should contain 'Beta' for arrays.")
   }
   message("Converting to squeezed M-values.")

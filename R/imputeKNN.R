@@ -57,8 +57,17 @@ imputeKNN <- function(obj, rowmax = 0.5, colmax = 0.8, k = 10,
     warning("Imputation may not work with samples that are too sparse!")
   }
   
-  #get the appropriate matrix and impute with KNN
-  message("Imputing missing data with KNN.")
+  #check to see if array values are still on the beta scale...
+  if (assay == "array") {
+    is.beta <- ifelse(min(assays(obj.clean)$Beta, na.rm = TRUE) < 0, FALSE, TRUE)
+    if (!is.beta) {
+      #send things back to beta land
+      assays(obj.clean)$Beta <- fexpit(assays(obj.clean)$Beta)
+    }
+  }
+  
+  #get the appropriate matrix and impute with kNN
+  message("Imputing missing data with kNN.")
   imputed.data <- switch(assay,
                          #use squeezed M-values to impute
                          array = impute.knn(flogit(assays(obj.clean)$Beta), k = k,

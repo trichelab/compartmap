@@ -16,17 +16,17 @@
 summarizeBootstraps <- function(boot.list, est.ab, q = 0.95,
                                 assay = c("array", "atac", "bisulfite")) {
   #go through the estimated A/B compartments and compute proportions from the boot.list
-  est.ab$gr$score <- est.ab$pc
+  est.ab$score <- est.ab$pc
   message("Summarizing bootstraps.")
   #initialize open and closed counts to enumerate
-  est.ab$gr$boot.open <- 0
-  est.ab$gr$boot.closed <- 0
+  est.ab$boot.open <- 0
+  est.ab$boot.closed <- 0
   #filter out failed compartment estimates
   boot.list <- removeEmptyBoots(boot.list)
   #summarize
   lapply(boot.list, function(b) {
     #add the pc to the granges object
-    b$gr$score <- b$pc
+    b$score <- b$pc
     #convert to binary result for proportions
     #logic for methylation
     #open = eigen < 0
@@ -35,44 +35,44 @@ summarizeBootstraps <- function(boot.list, est.ab, q = 0.95,
     #open = eigen > 0
     #closed = eigen < 0
     if (assay == "atac") {
-      b$gr$open <- ifelse(b$gr$score > 0, 1, 0)
-      b$gr$closed <- ifelse(b$gr$score < 0, 1, 0)
+      b$open <- ifelse(b$score > 0, 1, 0)
+      b$closed <- ifelse(b$score < 0, 1, 0)
     } else {
-      b$gr$open <- ifelse(b$gr$score < 0, 1, 0)
-      b$gr$closed <- ifelse(b$gr$score > 0, 1, 0)
+      b$open <- ifelse(b$score < 0, 1, 0)
+      b$closed <- ifelse(b$score > 0, 1, 0)
     }
     #overlap by common intervals
-    ol <- findOverlaps(b$gr, est.ab$gr)
-    mcols(est.ab$gr)$boot.open[subjectHits(ol)] <<- mcols(est.ab$gr)$boot.open[subjectHits(ol)] + mcols(b$gr)$open[queryHits(ol)]
-    mcols(est.ab$gr)$boot.closed[subjectHits(ol)] <<- mcols(est.ab$gr)$boot.closed[subjectHits(ol)] + mcols(b$gr)$closed[queryHits(ol)]
+    ol <- findOverlaps(b, est.ab)
+    mcols(est.ab)$boot.open[subjectHits(ol)] <<- mcols(est.ab)$boot.open[subjectHits(ol)] + mcols(b)$open[queryHits(ol)]
+    mcols(est.ab)$boot.closed[subjectHits(ol)] <<- mcols(est.ab)$boot.closed[subjectHits(ol)] + mcols(b)$closed[queryHits(ol)]
   })
   
   message("Computing Agresti-Coull 95% confidence intervals.")
-  est.ab$gr$conf.est <- 0
-  est.ab$gr$conf.est.upperCI <- 0
-  est.ab$gr$conf.est.lowerCI <- 0
-  lapply(1:length(est.ab$gr), function(e) {
+  est.ab$conf.est <- 0
+  est.ab$conf.est.upperCI <- 0
+  est.ab$conf.est.lowerCI <- 0
+  lapply(1:length(est.ab), function(e) {
     #compute intervals
-    if (est.ab$gr[e,]$score > 0) {
-      #assumes closed for ATAC
-      est <- agrestiCoullCI(est.ab$gr[e,]$boot.closed,
-                            est.ab$gr[e,]$boot.open,
+    if (est.ab[e,]$score > 0) {
+      #assumes closed for arrays
+      est <- agrestiCoullCI(est.ab[e,]$boot.closed,
+                            est.ab[e,]$boot.open,
                             q = 0.95)
       #this really isn't a good idea...
-      est.ab$gr[e,]$conf.est.lowerCI <<- est[1]
-      est.ab$gr[e,]$conf.est <<- est[2]
-      est.ab$gr[e,]$conf.est.upperCI <<- est[3]
+      est.ab[e,]$conf.est.lowerCI <<- est[1]
+      est.ab[e,]$conf.est <<- est[2]
+      est.ab[e,]$conf.est.upperCI <<- est[3]
     }
-    if (est.ab$gr[e,]$score < 0) {
-      #assumes open for ATAC
-      est <- agrestiCoullCI(est.ab$gr[e,]$boot.open,
-                            est.ab$gr[e,]$boot.closed,
+    if (est.ab[e,]$score < 0) {
+      #assumes open for arrays
+      est <- agrestiCoullCI(est.ab[e,]$boot.open,
+                            est.ab[e,]$boot.closed,
                             q = 0.95)
       #this really isn't a good idea...
-      est.ab$gr[e,]$conf.est.lowerCI <<- est[1]
-      est.ab$gr[e,]$conf.est <<- est[2]
-      est.ab$gr[e,]$conf.est.upperCI <<- est[3]
+      est.ab[e,]$conf.est.lowerCI <<- est[1]
+      est.ab[e,]$conf.est <<- est[2]
+      est.ab[e,]$conf.est.upperCI <<- est[3]
     }
   })
-  return(est.ab$gr)
+  return(est.ab)
 }

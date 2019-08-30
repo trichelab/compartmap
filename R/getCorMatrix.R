@@ -39,6 +39,8 @@
 getCorMatrix <- function(binmat, squeeze = FALSE) {
   #Calculate correlations
   message("Calculating correlations...")
+  #bind back up the global means and shrunken bins
+  binmat$x <- cbind(binmat$x, binmat$gmeans)
   binmat.cor <- suppressWarnings(cor(t(binmat$x)))
   gr.cor  <- binmat$gr
   if (squeeze) {

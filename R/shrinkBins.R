@@ -6,6 +6,7 @@
 #' @details This function computes shrunken bin-level estimates using a James-Stein estimator, reformulated as an eBayes procedure
 #' 
 #' @param x Input SummarizedExperiment object
+#' @param original.x Full sample set SummarizedExperiment object
 #' @param prior.means The means of the bin-level prior distribution
 #' @param chr The chromosome to operate on
 #' @param res Resolution to perform the binning
@@ -28,7 +29,7 @@
 #' shrunken.bin.array <- shrinkBins(imputed.array, chr = "chr14", assay = "array")
 #' 
 
-shrinkBins <- function(x, prior.means = NULL, chr = NULL,
+shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
                        res = 1e6, targets = NULL,
                        assay = c("array", "atac", "bisulfite"),
                        genome = c("hg19", "hg38", "mm9", "mm10")) {
@@ -43,23 +44,23 @@ shrinkBins <- function(x, prior.means = NULL, chr = NULL,
   
   #get the prior means
   if (is.null(prior.means)) {
-    prior.means <- getGlobalMeans(obj=x, targets=targets, assay=assay)
+    prior.means <- getGlobalMeans(obj=original.x, targets=targets, assay=assay)
   }
 
   #bin the input
   bin.mat <- suppressMessages(switch(assay,
-                                     atac = getBinMatrix(x=as.matrix(cbind(assays(x)$counts, prior.means)),
+                                     atac = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
                                                          genloc=rowRanges(x), chr=chr, res=res, FUN=sum,
                                                          genome = genome),
-                                     array = getBinMatrix(x=as.matrix(cbind(flogit(assays(x)$Beta), prior.means)),
+                                     array = getBinMatrix(x=as.matrix(cbind(flogit(assays(original.x)$Beta), prior.means)),
                                                          genloc=rowRanges(x), chr=chr, res=res, FUN=median,
                                                          genome = genome),
-                                     bisulfite = getBinMatrix(x=as.matrix(cbind(assays(x)$counts, prior.means)),
+                                     bisulfite = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
                                                          genloc=rowRanges(x), chr=chr, res=res, FUN=median,
                                                          genome = genome)))
   
   #shrink the bins using a James-Stein Estimator
-  x.shrink <- apply(bin.mat$x, 1, function(r) {
+  x.shrink <- t(apply(bin.mat$x, 1, function(r) {
     r.samps <- r[!names(r) %in% "globalMean"]
     r.prior.m <- r["globalMean"]
     if (!is.null(targets)) {
@@ -70,9 +71,9 @@ shrinkBins <- function(x, prior.means = NULL, chr = NULL,
            atac = .shrinkATAC(x=r.samps, prior=r.prior.m, targets=targets),
            array = .shrinkArrays(x=r.samps, prior=r.prior.m, targets=targets),
            bisulfite = .shrinkBS(x=r.samps, prior=r.prior.m, targets=targets))
-    })
+    }))
   
-  return(list(gr=bin.mat$gr, x=x.shrink, gmeans=bin.mat$x[,"globalMean"]))
+  return(list(gr=bin.mat$gr, x=x.shrink[,colnames(x)], gmeans=bin.mat$x[,"globalMean"]))
 }
 
 #helper functions for computing shrunken means

@@ -30,7 +30,7 @@ filterOpenSea <- function(obj, genome = c("hg19", "hg38", "mm10", "mm9"), other 
   }
   #Subset by overlaps
   message("Filtering to open sea CpG loci...")
-  obj.openseas <- subsetByOverlaps(obj, openseas.genome)
+  obj.openseas <- subsetByOverlaps(obj, get(openseas.genome))
   return(obj.openseas)
 }
 
@@ -104,6 +104,10 @@ maskArrays <- function(obj, genome = c("hg19", "hg38"), array.type = NULL) {
       mask.file <- paste0(array.type, ".", genome, ".manifest.rds")
       mask.rds <- readRDS(system.file(paste0("inst/extdata/", mask.file), package = "compartmap"))
     }
+  } else {
+    genome <- match.arg(genome)
+    mask.file <- paste0(array.type, ".", genome, ".manifest.rds")
+    mask.rds <- readRDS(system.file(paste0("inst/extdata/", mask.file), package = "compartmap"))
   }
   #mask the probes
   #subet to general mask
@@ -161,8 +165,8 @@ extractOpenClosed <- function(gr, cutoff = 0,
   if (!is(gr, "GRanges")) stop("Input needs to be a GRanges.")
   if (!("pc" %in% names(mcols(gr)))) stop("Need to have an mcols column be named 'pc'.")
   assay <- match.arg(assay)
-  if (assay %in% c("array", "bisulfite")) ifelse(gr$pc < cutoff, "open", "closed")
-  if (assay == "atac") ifelse(gr$pc < cutoff, "closed", "open")
+  if (assay %in% c("array", "bisulfite")) return(ifelse(gr$pc < cutoff, "open", "closed"))
+  if (assay == "atac") return(ifelse(gr$pc < cutoff, "closed", "open"))
 }
 
 checkAssayType <- function(obj) {
@@ -252,7 +256,7 @@ removeEmptyBoots <- function(obj) {
   #remove NAs from a bootstrap list
   #this can happen if the correlation between the bins and eigenvector fails
   #theoretically we can recover these but need an additional utility to find consensus
-  na.filt <- unlist(lapply(obj, function(n) ifelse(any(is.na(n$pc)), TRUE, FALSE)))
+  na.filt <- unlist(lapply(obj, function(n) ifelse(any(is.na(n$pc)), FALSE, TRUE)))
   obj <- obj[na.filt]
   return(obj)
 }
