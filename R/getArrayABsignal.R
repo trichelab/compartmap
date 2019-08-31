@@ -84,7 +84,8 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     #compute correlations
     obj.cor <- getCorMatrix(obj.bins, squeeze = TRUE)
     if (any(is.na(obj.cor$binmat.cor))) {
-      obj.svd <- matrix(rep(NA, nrow(obj.cor$binmat.cor)))
+      obj.cor$gr$pc <- matrix(rep(NA, nrow(obj.cor$binmat.cor)))
+      obj.svd <- obj.cor$gr
     } else {
       #compute SVD of correlation matrix
       obj.svd <- getABSignal(obj.cor, assay = "array")

@@ -44,7 +44,7 @@ getCorMatrix <- function(binmat, squeeze = FALSE) {
   binmat.cor <- suppressWarnings(cor(t(binmat$x)))
   gr.cor  <- binmat$gr
   if (squeeze) {
-    fisherZ(binmat.cor)
+    binmat.cor <- fisherZ(binmat.cor)
     }
   message("Done...")
   return(list(gr.cor=gr.cor, binmat.cor=binmat.cor))

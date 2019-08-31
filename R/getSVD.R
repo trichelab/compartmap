@@ -28,7 +28,7 @@ getSVD <- function (matrix, k = 1, sing.vec = c("left", "right")) {
                   left=runSVD(matrix, k=k, BSPARAM=IrlbaParam())$u,
                   right=runSVD(matrix, k=k, BSPARAM=IrlbaParam())$v)
   #sum up the matrix
-  csums <- colSums(t(matrix), na.rm=TRUE)
+  csums <- colSums(matrix, na.rm=TRUE)
   #check for negative correlation
   #flip sign as necessary to ensure signal is associated
   #with pos. values

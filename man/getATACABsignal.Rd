@@ -4,40 +4,44 @@
 \alias{getATACABsignal}
 \title{Estimate A/B compartments from ATAC-seq data}
 \usage{
-getATACABsignal(obj, res = 1e+06, parallel = FALSE, allchrs = FALSE,
-  chr = NULL, targets = NULL, bin.shrink = TRUE, ...)
+getATACABsignal(obj, res = 1e+06, parallel = TRUE, chr = NULL,
+  targets = NULL, cores = 2, bootstrap = TRUE,
+  num.bootstraps = 1000, genome = c("hg19", "hg38", "mm9", "mm10"),
+  other = NULL, bulk = FALSE, boot.parallel = TRUE, boot.cores = 2)
 }
 \arguments{
-\item{obj}{Input GenomicRatioSet object}
+\item{obj}{Input SummarizedExperiment object}
 
-\item{res}{Compartment resolution (in bp)}
+\item{res}{Compartment resolution in bp}
 
-\item{parallel}{Should the inference be done in parallel?}
+\item{parallel}{Whether to run samples in parallel}
 
-\item{allchrs}{Whether all autosomes should be used for A/B inference}
+\item{chr}{What chromosome to work on (leave as NULL to run on all chromosomes)}
 
-\item{chr}{Specify a chromosome to analyze}
+\item{targets}{Samples/cells to shrink towards}
 
-\item{targets}{Specify samples as shrinkage targets}
+\item{cores}{How many cores to use when running samples in parallel}
 
-\item{bin.shrink}{Specify whether to use the JSE bin-level shrinkage approach}
+\item{bootstrap}{Whether we should perform bootstrapping of inferred compartments}
 
-\item{...}{Additional arguments}
+\item{num.bootstraps}{How many bootstraps to run}
+
+\item{genome}{What genome to work on ("hg19", "hg38", "mm9", "mm10")}
+
+\item{other}{Another arbitrary genome to compute compartments on}
+
+\item{bulk}{Whether to treat this as a bulk set of samples}
+
+\item{boot.parallel}{Whether to run the bootstrapping in parallel}
+
+\item{boot.cores}{How many cores to use for the bootstrapping}
 }
 \value{
-A p x n matrix (samples as columns and compartments as rows) of compartments
+A RaggedExperiment of inferred compartments
 }
 \description{
-\code{getATACABsignal} returns estimated A/B compartments from methylation array data.
-}
-\details{
-This function estimates A/B compartments shrinking towards a global mean of targets or across samples
+\code{getATACABsignal} returns estimated A/B compartments from ATAC-seq data.
 }
 \examples{
-library(GenomicRanges)
-library(SummarizedExperiment)
-library(Homo.sapiens)
 
-data(bulkATAC_raw_filtered_chr14, package = "compartmap")
-atac_compartments <- getATACABsignal(filtered.data.chr14, chr = "chr14", genome = "hg19")
 }

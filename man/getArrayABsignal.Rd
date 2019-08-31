@@ -5,10 +5,10 @@
 \title{Estimate A/B compartments from methylation array data}
 \usage{
 getArrayABsignal(obj, res = 1e+06, parallel = TRUE, chr = NULL,
-  targets = NULL, preprocess = TRUE, cores = 1, bootstrap = TRUE,
+  targets = NULL, preprocess = TRUE, cores = 2, bootstrap = TRUE,
   num.bootstraps = 1000, genome = c("hg19", "hg38", "mm9", "mm10"),
   other = NULL, array.type = c("hm450", "EPIC"), bulk = FALSE,
-  boot.parallel = FALSE, boot.cores = 1)
+  boot.parallel = TRUE, boot.cores = 2)
 }
 \arguments{
 \item{obj}{Input SummarizedExperiment object}

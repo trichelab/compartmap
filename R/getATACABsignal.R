@@ -1,144 +1,128 @@
 #' @title Estimate A/B compartments from ATAC-seq data
 #'
 #' @description 
-#' \code{getATACABsignal} returns estimated A/B compartments from methylation array data.
+#' \code{getATACABsignal} returns estimated A/B compartments from ATAC-seq data.
 #'
-#' @details This function estimates A/B compartments shrinking towards a global mean of targets or across samples
-#' 
+#' @param obj Input SummarizedExperiment object
+#' @param res Compartment resolution in bp
+#' @param parallel Whether to run samples in parallel
+#' @param chr What chromosome to work on (leave as NULL to run on all chromosomes)
+#' @param targets Samples/cells to shrink towards
+#' @param cores How many cores to use when running samples in parallel
+#' @param bootstrap Whether we should perform bootstrapping of inferred compartments
+#' @param num.bootstraps How many bootstraps to run
+#' @param genome What genome to work on ("hg19", "hg38", "mm9", "mm10")
+#' @param other Another arbitrary genome to compute compartments on
+#' @param bulk Whether to treat this as a bulk set of samples
+#' @param boot.parallel Whether to run the bootstrapping in parallel
+#' @param boot.cores How many cores to use for the bootstrapping
 #'
-#' @param obj Input GenomicRatioSet object 
-#' @param res Compartment resolution (in bp)
-#' @param parallel Should the inference be done in parallel?
-#' @param allchrs Whether all autosomes should be used for A/B inference
-#' @param chr Specify a chromosome to analyze
-#' @param targets Specify samples as shrinkage targets
-#' @param bin.shrink Specify whether to use the JSE bin-level shrinkage approach
-#' @param ... Additional arguments
-#'
-#' @return A p x n matrix (samples as columns and compartments as rows) of compartments
-#' @import GenomicRanges
+#' @return A RaggedExperiment of inferred compartments
 #' @import SummarizedExperiment
+#' @import parallel
+#' @import RaggedExperiment
 #' @import Homo.sapiens
+#' @import Mus.musculus
+#' @import BSgenome.Hsapiens.UCSC.hg38
+#' @import BSgenome.Mmusculus.UCSC.mm9
 #' @export
+#' @examples
 #' 
-#' @examples 
-#' library(GenomicRanges)
-#' library(SummarizedExperiment)
-#' library(Homo.sapiens)
-#' 
-#' data(bulkATAC_raw_filtered_chr14, package = "compartmap")
-#' atac_compartments <- getATACABsignal(filtered.data.chr14, chr = "chr14", genome = "hg19")
-
-getATACABsignal <- function(obj, res=1e6, parallel=FALSE, allchrs=FALSE, chr = NULL, targets = NULL, bin.shrink = TRUE, ...) {
-  globalMeanSet <- .getGlobalMeansATAC(obj, targets)
+getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
+                             targets = NULL, cores = 2,
+                             bootstrap = TRUE, num.bootstraps = 1000,
+                             genome = c("hg19", "hg38", "mm9", "mm10"),
+                             other = NULL, bulk = FALSE,
+                             boot.parallel = TRUE, boot.cores = 2) {
+  
+  #gather the chromosomes we are working on
+  if (is.null(chr)) {
+    message("Assuming we want to process all chromosomes.")
+    #get what chromosomes we want
+    chr <- getChrs(obj)
+  }
+  
+  #get the column names
+  if (is.null(colnames(obj))) stop("colnames needs to be sample names.")
   columns <- colnames(obj)
-  names(columns) <- columns 
+  names(columns) <- columns
   
-  getComp <- .getPaired
-  if (allchrs == TRUE) getComp <- .getPairedAllChrs
-  
-  #fix up the seqlevels if a single chromosome is specified and not done earlier
-  if (length(seqlevels(obj)) > 1 & !is.null(chr) & isFALSE(allchrs)) {
-    obj <- keepSeqlevels(obj, chr)
-  }
-  
-  if (bin.shrink) {
-    samp.chrs <- seqlevels(obj)[seqlevels(obj) %in% standardChromosomes(Homo.sapiens)]
-    obj <- lapply(samp.chrs, function(x) {
-      shrinkBins(x = obj, prior.means = globalMeanSet, assay = "atac", chr = x, res = res, targets = targets)
-    })
-    names(obj) <- samp.chrs
-  }
-  
-  if (parallel) {
-    #this should be set earlier...
-    #options(mc.cores=detectCores()/2) # RAM blows up otherwise 
-    do.call(cbind, 
-            mclapply(columns,getComp,obj=obj,globalMeanSet=globalMeanSet,chr=chr,targets=targets,res=res,bin.shrink=bin.shrink,...))
-  } else { 
-    do.call(cbind, 
-            lapply(columns,getComp,obj=obj,globalMeanSet=globalMeanSet,chr=chr,targets=targets,res=res,bin.shrink=bin.shrink,...))
-  } 
-}
-
-.getGlobalMeansATAC <- function(obj, targets = NULL) {
-  if (!is.null(targets)){
-    stargets <- .getShrinkageTargets(obj, targets)
-    message("Using ", paste(shQuote(targets), collapse = ", "), " as shrinkage targets...")
-    meanBeta <- matrix(rowMeans(assay(stargets), na.rm=TRUE), ncol=1)
-  }
-  else (meanBeta <- matrix(rowMeans(assay(obj), na.rm=TRUE), ncol=1))
-  colnames(meanBeta) <- "globalMean"
-  return(meanBeta) 
-}
-
-.resampleGlobalMeansATAC <- function(obj, targets = NULL) {
-  if(!is.null(targets)) {
-    stargets <- .getShrinkageTargets(obj, targets)
-    message("Using ", paste(shQuote(targets), collapse = ", "), " as shrinkage targets...")
+  #worker function
+  atacCompartments <- function(obj, original.obj, res = 1e6, chr = NULL, targets = NULL,
+                                genome = c("hg19", "hg38", "mm9", "mm10"),
+                                prior.means = NULL, bootstrap = TRUE,
+                                num.bootstraps = 1000, parallel = FALSE,
+                                cores = 2) {
+    #this is the main analysis function for computing compartments from atacs
+    #make sure the input is sane
+    if (!checkAssayType(obj)) stop("Input needs to be a SummarizedExperiment")
     
-    meanCounts <- matrix(rowMeans(assay(stargets), na.rm=TRUE), ncol=1)
-  }
-  else (meanCounts <- matrix(rowMeans(assay(obj), na.rm=TRUE), ncol=1))
-  colnames(meanCounts) <- "globalMean"
-  return(meanCounts)
-}
-
-.getShrinkageTargets <- function(obj, group) {
-  if (all(group %in% colnames(obj))) stargets.obj <- obj[,group]
-  else (stop("Could not find ", group, " in the colnames of the input matrix..."))
-  return(stargets.obj)
-}
-
-.getPaired <- function(column, obj, globalMeanSet=NULL, res=1e6, chr=NULL, bin.shrink=TRUE, ...) {
-  message("Computing shrunken compartment eigenscores for ", column, "...") 
-  if(is.null(globalMeanSet)) globalMeanSet <- .getGlobalMeansATAC(obj)
-  if (bin.shrink) {
-    #this is gross...
-    binmat <- list(gr = obj[[chr]]$gr, x = as.matrix(cbind(obj[[chr]]$x[column,], obj[[chr]]$gmeans)))
-  } else {
-    binmat <- getBinMatrix(as.matrix(cbind(assay(obj)[,column], globalMeanSet)), rowRanges(obj), chr = chr, res = res)
-  }
-  cormat <- getCorMatrix(binmat, squeeze = TRUE)
-  #Stupid check for perfect correlation with global mean
-  if (any(is.na(cormat$binmat.cor))) {
-    absig <- matrix(rep(NA, nrow(cormat$binmat.cor)))
-  }
-  else {
-    absig <- getABSignal(cormat, squeeze = FALSE)
-    absig.pc <- absig$pc
-    names(absig.pc) <- as.character(granges(absig))
-    absig <- absig.pc
-  }
-  return(absig)
-}
-
-.getPairedAllChrs <- function(column, obj, globalMeanSet=NULL, res=1e6, chr = NULL, ...) {
-  if (is.null(globalMeanSet)) globalMeanSet <- .getGlobalMeansATAC(obj)
-  #this isn't what we want to do...
-  chrs <- paste0("chr", c(seq(1,22)))
-  names(chrs) <- chrs
-  getPairedChr <- function(chr) { 
-    message("Computing shrunken eigenscores for ", column, " on ", chr, "...") 
-    if (bin.shrink) {
-      #this is gross...
-      binmat <- list(gr = obj[[chr]]$gr, x = as.matrix(cbind(obj[[chr]]$x[column,], obj[[chr]]$gmeans)))
+    #what genome do we have
+    genome <- match.arg(genome)
+    
+    #set the parallel back-end core number
+    if (parallel) options(mc.cores = cores)
+    
+    #update
+    message("Computing compartments for ", chr)
+    obj <- keepSeqlevels(obj, chr, pruning.mode = "coarse")
+    original.obj <- keepSeqlevels(original.obj, chr, pruning.mode = "coarse")
+    
+    #get the shrunken bins
+    obj.bins <- shrinkBins(obj, original.obj, prior.means = prior.means, chr = chr,
+                           res = res, targets = targets, assay = "atac",
+                           genome = genome)
+    #compute correlations
+    obj.cor <- getCorMatrix(obj.bins, squeeze = TRUE)
+    if (any(is.na(obj.cor$binmat.cor))) {
+      obj.cor$gr$pc <- matrix(rep(NA, nrow(obj.cor$binmat.cor)))
+      obj.svd <- obj.cor$gr
     } else {
-      binmat <- getBinMatrix(as.matrix(cbind(assay(obj)[,column], globalMeanSet)), rowRanges(obj), chr = chr, res = res)
-    }
-    cormat <- getCorMatrix(binmat, squeeze = TRUE)
-    #Stupid check for perfect correlation with global mean
-    if (any(is.na(cormat$binmat.cor))) {
-      absig <- matrix(rep(NA, nrow(cormat$binmat.cor)))
-    }
-    else {
-      absig <- getABSignal(cormat, squeeze = FALSE)
-      absig.pc <- absig$pc
-      names(absig.pc) <- as.character(granges(absig))
-      absig <- absig.pc
+      #compute SVD of correlation matrix
+      obj.svd <- getABSignal(obj.cor, assay = "atac")
     }
     
-    return(absig)
+    if (isFALSE(bootstrap)) return(obj.svd)
+    
+    #bootstrap the estimates
+    #always compute confidence intervals too
+    obj.bootstrap <- bootstrapCompartments(obj, original.obj, bootstrap.samples = num.bootstraps,
+                                           chr = chr, assay = "atac", parallel = parallel, cores = cores,
+                                           targets = targets, res = res, genome = genome, q = 0.95, svd = obj.svd)
+    
+    #combine and return
+    return(obj.bootstrap)
   }
-  unlist(lapply(chrs, getPairedChr))
+  
+  #initialize global means
+  #gmeans <- getGlobalMeans(obj, targets = targets, assay = "atac")
+  
+  if (parallel & isFALSE(bulk)) {
+    atac.compartments <- mclapply(columns, function(s) {
+      obj.sub <- obj[,s]
+      message("Working on ", s)
+      sort(unlist(as(lapply(chr, function(c) atacCompartments(obj.sub, obj, res = res,
+                                                               chr = c, targets = targets, genome = genome,
+                                                               bootstrap = bootstrap,
+                                                               num.bootstraps = num.bootstraps, parallel = boot.parallel,
+                                                               cores = boot.cores)), "GRangesList")))
+    }, mc.cores = cores)
+  }
+  
+  if (isFALSE(bulk)) {
+    atac.compartments <- lapply(columns, function(s) {
+      obj.sub <- obj[,s]
+      message("Working on ", s)
+      sort(unlist(as(lapply(chr, function(c) atacCompartments(obj.sub, obj, res = res,
+                                                               chr = c, targets = targets, genome = genome,
+                                                               bootstrap = bootstrap,
+                                                               num.bootstraps = num.bootstraps, parallel = boot.parallel,
+                                                               cores = boot.cores)), "GRangesList")))
+    })
+  }
+  
+  #convert to GRangesList
+  atac.compartments <- as(atac.compartments, "GRangesList")
+  #return as a RaggedExperiment
+  return(RaggedExperiment(atac.compartments, colData = colData(obj)))
 }
