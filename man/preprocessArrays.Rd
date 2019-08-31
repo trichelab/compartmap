@@ -5,7 +5,7 @@
 \title{Preprocess arrays for compartment inference}
 \usage{
 preprocessArrays(obj, res = 1e+06, genome = c("hg19", "hg38", "mm9",
-  "mm10"), other = NULL, array.type = c("hm450", "EPIC"))
+  "mm10"), other = NULL)
 }
 \arguments{
 \item{obj}{Input SummarizedExperiment}

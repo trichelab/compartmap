@@ -27,7 +27,9 @@
 #' @import BSgenome.Mmusculus.UCSC.mm9
 #' @export
 #' @examples
-#' 
+#' data("bulkATAC_raw_filtered_chr14", package = "compartmap")
+#' atac_compartments <- getATACABsignal(filtered.data.chr14, parallel=F, chr="chr14", bootstrap=F, genome="hg19")
+
 getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                              targets = NULL, cores = 2,
                              bootstrap = TRUE, num.bootstraps = 1000,
