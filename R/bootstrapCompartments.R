@@ -43,6 +43,10 @@ bootstrapCompartments <- function(obj, original.obj, bootstrap.samples = 1000,
   if (!is.null(targets)) original.obj <- original.obj[,targets]
   if (ncol(original.obj) < 6) stop("We need more than 5 samples to bootstrap with for the results to be meaningful.")
   
+  #subset to just the chromosome we are working on
+  obj <- keepSeqlevels(obj, chr, pruning.mode = "coarse")
+  original.obj <- keepSeqlevels(original.obj, chr, pruning.mode = "coarse")
+  
   if (!parallel) {
     message("Not bootstrapping in parallel will take a long time...")
     #bootstrap and recompute compartments

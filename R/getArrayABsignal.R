@@ -31,11 +31,11 @@
 #' @examples
 #' 
 getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
-                             targets = NULL, preprocess = TRUE, cores = 1,
+                             targets = NULL, preprocess = TRUE, cores = 2,
                              bootstrap = TRUE, num.bootstraps = 1000,
                              genome = c("hg19", "hg38", "mm9", "mm10"),
                              other = NULL, array.type = c("hm450", "EPIC"),
-                             bulk = FALSE, boot.parallel = FALSE, boot.cores = 1) {
+                             bulk = FALSE, boot.parallel = TRUE, boot.cores = 2) {
   
   #preprocess the arrays
   if (preprocess) {
@@ -61,7 +61,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                 genome = c("hg19", "hg38", "mm9", "mm10"),
                                 prior.means = NULL, bootstrap = TRUE,
                                 num.bootstraps = 1000, parallel = FALSE,
-                                cores = 1) {
+                                cores = 2) {
     #this is the main analysis function for computing compartments from arrays
     #make sure the input is sane
     if (!checkAssayType(obj)) stop("Input needs to be a SummarizedExperiment")
@@ -71,6 +71,11 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     
     #set the parallel back-end core number
     if (parallel) options(mc.cores = cores)
+    
+    #subset to just the chromosome we are working on
+    message("Computing compartments for ", chr)
+    obj <- keepSeqlevels(obj, chr, pruning.mode = "coarse")
+    original.obj <- keepSeqlevels(original.obj, chr, pruning.mode = "coarse")
     
     #get the shrunken bins
     obj.bins <- shrinkBins(obj, original.obj, prior.means = prior.means, chr = chr,
