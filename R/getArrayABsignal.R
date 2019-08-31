@@ -103,7 +103,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   }
   
   #initialize global means
-  gmeans <- getGlobalMeans(obj, targets = targets, assay = "array")
+  #gmeans <- getGlobalMeans(obj, targets = targets, assay = "array")
   
   if (parallel & isFALSE(bulk)) {
     array.compartments <- mclapply(columns, function(s) {
@@ -111,7 +111,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       message("Working on ", s)
       sort(unlist(as(lapply(chr, function(c) arrayCompartments(obj.sub, obj, res = res,
                                                                chr = c, targets = targets, genome = genome,
-                                                               prior.means = gmeans, bootstrap = bootstrap,
+                                                               bootstrap = bootstrap,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
                                                                cores = boot.cores)), "GRangesList")))
     }, mc.cores = cores)
@@ -123,7 +123,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       message("Working on ", s)
       sort(unlist(as(lapply(chr, function(c) arrayCompartments(obj.sub, obj, res = res,
                                                                chr = c, targets = targets, genome = genome,
-                                                               prior.means = gmeans, bootstrap = bootstrap,
+                                                               bootstrap = bootstrap,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
                                                                cores = boot.cores)), "GRangesList")))
     })
