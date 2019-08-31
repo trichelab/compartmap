@@ -1,7 +1,7 @@
 #' @title Estimate A/B compartments from BS-seq data
 #'
 #' @description 
-#' \code{getWGBSABsignal} returns estimated A/B compartments from BS-seq data.
+#' \code{getBSABsignal} returns estimated A/B compartments from BS-seq data.
 #'
 #' @param obj Input SummarizedExperiment object
 #' @param res Compartment resolution in bp
@@ -31,7 +31,7 @@
 #' data("meth_wgbs_450k_chr14", package = "compartmap")
 #' wgbs_compartments <- getWGBSABsignal(wgbs.data.chr14, parallel=F, chr="chr14", bootstrap=F, genome="hg19", wgbs.type="hm450")
 
-getWGBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
+getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                              targets = NULL, preprocess = TRUE, cores = 2,
                              bootstrap = TRUE, num.bootstraps = 1000,
                              genome = c("hg19", "hg38", "mm9", "mm10"),
@@ -40,7 +40,7 @@ getWGBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   
   #preprocess the wgbss
   if (preprocess) {
-    obj <- preprocessWGBS(obj = obj, res = res,
+    obj <- preprocessBSseq(obj = obj, res = res,
                             genome = genome, other = other)
   }
   
@@ -151,7 +151,7 @@ getWGBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
 #'
 #' @examples
 #' 
-preprocessArrays <- function(obj, res = 1e6,
+preprocessBSseq <- function(obj, res = 1e6,
                              genome = c("hg19", "hg38", "mm9", "mm10"),
                              other = NULL) {
   #make sure the input is sane
