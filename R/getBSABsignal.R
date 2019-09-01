@@ -141,7 +141,6 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
 #' @name preprocessWGBS
 #'
 #' @param obj Input SummarizedExperiment
-#' @param res Compartment resolution in bp
 #' @param genome What genome are we working on ("hg19", "hg38", "mm9", "mm10")
 #' @param other Another arbitrary genome to compute compartments on
 #'
@@ -151,7 +150,7 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
 #'
 #' @examples
 #' 
-preprocessBSseq <- function(obj, res = 1e6,
+preprocessBSseq <- function(obj,
                              genome = c("hg19", "hg38", "mm9", "mm10"),
                              other = NULL) {
   #make sure the input is sane
@@ -160,8 +159,11 @@ preprocessBSseq <- function(obj, res = 1e6,
   #what genome do we have
   genome <- match.arg(genome)
   
+  #smooth
+  obj.smooth <- smoothBSCounts(obj)
+  
   #subset the wgbs to open sea CpGs
-  obj.opensea <- filterOpenSea(obj, genome = genome, other = other)
+  obj.opensea <- filterOpenSea(obj.smooth, genome = genome, other = other)
   
   #convert things to M-values
   #check the names of the assays

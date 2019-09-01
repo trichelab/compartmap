@@ -34,7 +34,6 @@ smoothBSCounts <- function(obj, minCov=3, minSamp=2, k=0.5, r=NULL) {
   if (!any(getAssayNames(obj) %in% c("M", "Cov"))) {
     stop("The assays slot of the bsseq object needs to have 'M' and 'Cov'.")
   }
-  
   return(.getLogitFracMeth(obj, minCov = minCov, minSamp = minSamp,
                            k = k, r = r))
 }
@@ -58,7 +57,13 @@ smoothBSCounts <- function(obj, minCov=3, minSamp=2, k=0.5, r=NULL) {
     return(assays(x)$counts <- smoothed.counts)
   } else { 
     smoothed.counts <- .getSmoothedLogitFrac(subset(x, usable), k=k, minCov=minCov)
-    return(assays(x)$counts <- smoothed.counts)
+    #convert to GRanges
+    smooth.ranges <- granges(as.matrix(smoothed.counts))
+    #make into a SummarizedExperiment object
+    smooth.se <- SummarizedExperiment(assays=SimpleList(counts=as.matrix(smoothed.counts)),
+                                      rowRanges=granges(smooth.ranges),
+                                      colData=colData(x))
+    return(smooth.se)
   } 
   
 }

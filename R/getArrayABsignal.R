@@ -143,7 +143,6 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
 #' @name preprocessArrays
 #'
 #' @param obj Input SummarizedExperiment
-#' @param res Compartment resolution in bp
 #' @param genome What genome are we working on ("hg19", "hg38", "mm9", "mm10")
 #' @param other Another arbitrary genome to compute compartments on
 #' @param array.type What type of array is this ("hm450", "EPIC")
@@ -154,7 +153,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
 #'
 #' @examples
 #' 
-preprocessArrays <- function(obj, res = 1e6,
+preprocessArrays <- function(obj,
                              genome = c("hg19", "hg38", "mm9", "mm10"),
                              other = NULL, array.type = c("hm450", "EPIC")) {
   #make sure the input is sane
