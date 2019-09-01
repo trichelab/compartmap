@@ -3,6 +3,7 @@
 #' Plot A/B compartments bins
 #'
 #' @param x      The matrix obejct returned from getCompartments
+#' @param chr    Chromosome to subset to for plotting
 #' @param main    Title for the plot
 #' @param ylim      Y-axis limits (default is -1 to 1)
 #' @param unitarize   Should the data be unitarized? (not explicitly necessary for arrays)
@@ -73,13 +74,14 @@
 
 
 
-plotAB <- function(x, main="",ylim=c(-1, 1), unitarize=FALSE, reverse=FALSE,
+plotAB <- function(x, chr = NULL, main="",ylim=c(-1, 1), unitarize=FALSE, reverse=FALSE,
                    top.col = "deeppink4", bot.col = "grey50", with.ci = FALSE,
                    filter = TRUE, filter.min.eigen = 0.02, median.conf = FALSE){
   
   #check if plotting CI
   if (with.ci) {
     if (is(x, "GRanges")) {
+      if (!is.null(chr)) x <- keepSeqlevels(x, chr, pruning.mode = "coarse")
       if (("conf.est" %in% names(mcols(x)))) {
         if (filter) x <- x[abs(x$score) > filter.min.eigen,]
         x.mat <- x$score
@@ -108,7 +110,10 @@ plotAB <- function(x, main="",ylim=c(-1, 1), unitarize=FALSE, reverse=FALSE,
       stop("Input needs to be a GRanges object.")
     }
   } else {
-    if (is(x, "GRanges")) x <- as(x, "matrix") # coerce
+    if (is(x, "GRanges")) {
+      if (!is.null(chr)) x <- keepSeqlevels(x, chr, pruning.mode = "coarse")
+      x <- as(x, "matrix") # coerce
+    }
     #if (filter) x <- x[abs(x) > filter.min.eigen,]
     if (unitarize) x <- .unitarize(x)
     x <- as.numeric(x)
