@@ -40,8 +40,7 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   
   #preprocess the wgbss
   if (preprocess) {
-    obj <- preprocessBSseq(obj = obj, res = res,
-                            genome = genome, other = other)
+    obj <- preprocessBSseq(obj = obj, genome = genome, other = other)
   }
   
   #gather the chromosomes we are working on

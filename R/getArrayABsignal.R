@@ -41,7 +41,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   
   #preprocess the arrays
   if (preprocess) {
-    obj <- preprocessArrays(obj = obj, res = res,
+    obj <- preprocessArrays(obj = obj,
                             genome = genome, other = other,
                             array.type = array.type)
   }
