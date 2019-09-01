@@ -164,14 +164,6 @@ preprocessArrays <- function(obj,
   
   #subset the array to open sea CpGs
   obj.opensea <- filterOpenSea(obj, genome = genome, other = other)
-  #mask off bad probes for human arrays
-  #this is for making sure these probes are gone if not
-  #analyzed by SeSAMe which will do it natively
-  if (genome %in% c("hg19", "hg38")) {
-    message("Masking off bad probes.")
-    obj.badprobe.filt <- maskArrays(obj.opensea, genome = genome, array.type = array.type)
-    obj.opensea <- obj.badprobe.filt
-  }
   
   #convert things to M-values
   #check the names of the assays

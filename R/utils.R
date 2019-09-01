@@ -59,62 +59,6 @@ getOpenSeas <- function(gr) {
   return(openSeas)
 }
 
-#' Mask off probes using annotations MASK_general from Zhou et. al NAR 2017
-#' https://doi.org/10.1093/nar/gkw967
-#' 
-#' @name maskArrays
-#'
-#' @param obj Input SummarizedExperiment to be masked
-#' @param genome Which genome annotations to use
-#' @param array.type Array type (EPIC or hm450);
-#' default is NULL and will try to figure it out on the fly
-#'
-#' @return A subsetted SummarizedExperiment without masked probes
-#' @export
-#'
-#' @examples
-#' 
-maskArrays <- function(obj, genome = c("hg19", "hg38"), array.type = NULL) {
-  #make sure input is sane
-  if (!checkAssayType(obj)) stop("Input needs to be a SummarizedExperiment.")
-  #mask arrays for bad actor probes and SNPs
-  if (is.null(array.type)) {
-    #first try and see if Annotation exists
-    #(e.g. processed by sesame though these should be masked already...)
-    if ("annotation" %in% slotNames(obj)) {
-      array <- obj@annotation["array"]
-      annotation <- obj@annotation["annotation"]
-      #paste together to get the right mask file
-      if ("EPIC" %in% array) array.type <- "EPIC"
-      if ("450" %in% array) array.type <- "hm450"
-      if (is.null(array.type)) stop("Couldn't figure out if this was EPIC or hm450")
-      genome <- strsplit(annotation, "\\.")$annotation[2]
-      mask.file <- paste0(array.type, ".", genome, ".manifest.rds")
-      mask.rds <- readRDS(system.file("extdata", mask.file, package = "compartmap"))
-    } else {
-      message("Attempting to guess what kind of methylation array this is (EPIC or hm450)...")
-      if (nrow(obj) < 450e3) {
-        message("Assuming hm450...")
-        array.type <- "hm450"
-      } else {
-        message("Assuming EPIC...")
-        array.type <- "EPIC"
-      }
-      genome <- match.arg(genome)
-      mask.file <- paste0(array.type, ".", genome, ".manifest.rds")
-      mask.rds <- readRDS(system.file("extdata", mask.file, package = "compartmap"))
-    }
-  } else {
-    genome <- match.arg(genome)
-    mask.file <- paste0(array.type, ".", genome, ".manifest.rds")
-    mask.rds <- readRDS(system.file("extdata", mask.file, package = "compartmap"))
-  }
-  #mask the probes
-  #subet to general mask
-  general.mask <- mask.rds[mcols(mask.rds)$MASK_general == TRUE,]
-  return(subsetByOverlaps(obj, general.mask, invert = TRUE))
-}
-
 #' Retrieve probes, regions, etc. that fall within PMDs defined by Zhou et. al 2018
 #' https://www.nature.com/articles/s41588-018-0073-4
 #' 
@@ -381,3 +325,5 @@ condenseSE <- function(obj, sample.name = NULL) {
     return(obj.dense.lst)
   }
 }
+
+
