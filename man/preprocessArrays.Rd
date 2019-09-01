@@ -4,13 +4,11 @@
 \alias{preprocessArrays}
 \title{Preprocess arrays for compartment inference}
 \usage{
-preprocessArrays(obj, res = 1e+06, genome = c("hg19", "hg38", "mm9",
-  "mm10"), other = NULL, array.type = c("hm450", "EPIC"))
+preprocessArrays(obj, genome = c("hg19", "hg38", "mm9", "mm10"),
+  other = NULL, array.type = c("hm450", "EPIC"))
 }
 \arguments{
 \item{obj}{Input SummarizedExperiment}
-
-\item{res}{Compartment resolution in bp}
 
 \item{genome}{What genome are we working on ("hg19", "hg38", "mm9", "mm10")}
 
