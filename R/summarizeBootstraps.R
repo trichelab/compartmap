@@ -54,20 +54,35 @@ summarizeBootstraps <- function(boot.list, est.ab, q = 0.95,
   lapply(1:length(est.ab), function(e) {
     #compute intervals
     if (est.ab[e,]$score > 0) {
-      #assumes closed for arrays
-      est <- agrestiCoullCI(est.ab[e,]$boot.closed,
-                            est.ab[e,]$boot.open,
-                            q = 0.95)
+      if (assay == "atac") {
+        #assumes open for ATAC
+        est <- agrestiCoullCI(est.ab[e,]$boot.open,
+                              est.ab[e,]$boot.closed,
+                              q = 0.95)
+      } else {
+        #assumes closed for arrays
+        est <- agrestiCoullCI(est.ab[e,]$boot.closed,
+                              est.ab[e,]$boot.open,
+                              q = 0.95)
+      }
+      
       #this really isn't a good idea...
       est.ab[e,]$conf.est.lowerCI <<- est[1]
       est.ab[e,]$conf.est <<- est[2]
       est.ab[e,]$conf.est.upperCI <<- est[3]
     }
     if (est.ab[e,]$score < 0) {
-      #assumes open for arrays
-      est <- agrestiCoullCI(est.ab[e,]$boot.open,
-                            est.ab[e,]$boot.closed,
-                            q = 0.95)
+      if (assay == "atac") {
+        #assumes closed for ATAC
+        est <- agrestiCoullCI(est.ab[e,]$boot.closed,
+                              est.ab[e,]$boot.open,
+                              q = 0.95)
+      } else {
+        #assumes open for arrays
+        est <- agrestiCoullCI(est.ab[e,]$boot.open,
+                              est.ab[e,]$boot.closed,
+                              q = 0.95)
+      }
       #this really isn't a good idea...
       est.ab[e,]$conf.est.lowerCI <<- est[1]
       est.ab[e,]$conf.est <<- est[2]
