@@ -134,7 +134,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       "GRangesList")))
   }
   
-  if (isTRUE(group)) {
+  if (!parallel & isTRUE(group)) {
     atac.compartments <- sort(unlist(as(lapply(chr, function(c) {
       atacCompartments(obj, obj, res = res,
                         chr = c, targets = targets, genome = genome,

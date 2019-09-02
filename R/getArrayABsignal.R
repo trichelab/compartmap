@@ -143,7 +143,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       mc.cores = cores), "GRangesList")))
   }
   
-  if (isTRUE(group)) {
+  if (!parallel & isTRUE(group)) {
     array.compartments <- sort(unlist(as(lapply(chr, function(c) {
       arrayCompartments(obj, obj, res = res,
                         chr = c, targets = targets, genome = genome,

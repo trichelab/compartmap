@@ -60,7 +60,7 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                 genome = c("hg19", "hg38", "mm9", "mm10"),
                                 prior.means = NULL, bootstrap = TRUE,
                                 num.bootstraps = 1000, parallel = FALSE,
-                                cores = 2) {
+                                cores = 2, group = group) {
     #this is the main analysis function for computing compartments from wgbss
     #make sure the input is sane
     if (!checkAssayType(obj)) stop("Input needs to be a SummarizedExperiment")
@@ -96,7 +96,8 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     #always compute confidence intervals too
     obj.bootstrap <- bootstrapCompartments(obj, original.obj, bootstrap.samples = num.bootstraps,
                                            chr = chr, assay = "bisulfite", parallel = parallel, cores = cores,
-                                           targets = targets, res = res, genome = genome, q = 0.95, svd = obj.svd)
+                                           targets = targets, res = res, genome = genome, q = 0.95,
+                                           svd = obj.svd, group = group)
     
     #combine and return
     return(obj.bootstrap)
@@ -113,7 +114,7 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                                                chr = c, targets = targets, genome = genome,
                                                                bootstrap = bootstrap,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
-                                                               cores = boot.cores)), "GRangesList")))
+                                                               cores = boot.cores, group = group)), "GRangesList")))
     }, mc.cores = cores)
   }
   
@@ -125,7 +126,7 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                                                chr = c, targets = targets, genome = genome,
                                                                bootstrap = bootstrap,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
-                                                               cores = boot.cores)), "GRangesList")))
+                                                               cores = boot.cores, group = group)), "GRangesList")))
     })
   }
   
@@ -134,16 +135,16 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       wgbsCompartments(obj, obj, res = res,
                         chr = c, targets = targets, genome = genome,
                         bootstrap = bootstrap,num.bootstraps = num.bootstraps,
-                        parallel = boot.parallel, cores = boot.cores)}, mc.cores = cores),
+                        parallel = boot.parallel, cores = boot.cores, group = group)}, mc.cores = cores),
       "GRangesList")))
   }
   
-  if (isTRUE(group)) {
+  if (!parallel & isTRUE(group)) {
     wgbs.compartments <- sort(unlist(as(lapply(chr, function(c) {
       wgbsCompartments(obj, obj, res = res,
                         chr = c, targets = targets, genome = genome,
                         bootstrap = bootstrap,num.bootstraps = num.bootstraps,
-                        parallel = boot.parallel, cores = boot.cores)}),
+                        parallel = boot.parallel, cores = boot.cores, group = group)}),
       "GRangesList")))
   }
   
