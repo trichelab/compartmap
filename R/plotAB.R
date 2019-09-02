@@ -74,17 +74,19 @@
 
 
 
-plotAB <- function(x, chr = NULL, main="",ylim=c(-1, 1), unitarize=FALSE, reverse=FALSE,
-                   top.col = "deeppink4", bot.col = "grey50", with.ci = FALSE,
-                   filter = TRUE, filter.min.eigen = 0.02, median.conf = FALSE){
-  
+plotAB <- function(x, chr = NULL, what = c("score", "flip.score"), main="",ylim=c(-1, 1),
+                   unitarize=FALSE, reverse=FALSE, top.col = "deeppink4", bot.col = "grey50",
+                   with.ci = FALSE, filter = TRUE, filter.min.eigen = 0.02,
+                   median.conf = FALSE){
+  #what are we plotting
+  what <- match.arg(what)
   #check if plotting CI
   if (with.ci) {
     if (is(x, "GRanges")) {
       if (!is.null(chr)) x <- keepSeqlevels(x, chr, pruning.mode = "coarse")
       if (("conf.est" %in% names(mcols(x)))) {
-        if (filter) x <- x[abs(x$score) > filter.min.eigen,]
-        x.mat <- x$score
+        if (filter) x <- x[abs(x$what) > filter.min.eigen,]
+        x.mat <- x$what
         if (unitarize) x.mat <- .unitarize(x.mat)
         x.mat <- as.numeric(x.mat)
         if (reverse) x.mat <- -x.mat
@@ -112,9 +114,11 @@ plotAB <- function(x, chr = NULL, main="",ylim=c(-1, 1), unitarize=FALSE, revers
   } else {
     if (is(x, "GRanges")) {
       if (!is.null(chr)) x <- keepSeqlevels(x, chr, pruning.mode = "coarse")
-      x <- as(x$pc, "matrix") # coerce
+      x <- switch(what,
+                  score = as(x$pc, "matrix"),
+                  flip.score = as(x$flip.score, "matrix"))
     }
-    #if (filter) x <- x[abs(x) > filter.min.eigen,]
+    if (filter) x <- x[abs(x) > filter.min.eigen]
     if (unitarize) x <- .unitarize(x)
     x <- as.numeric(x)
     if (reverse) x <- -x
