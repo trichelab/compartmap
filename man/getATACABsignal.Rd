@@ -7,7 +7,8 @@
 getATACABsignal(obj, res = 1e+06, parallel = TRUE, chr = NULL,
   targets = NULL, cores = 2, bootstrap = TRUE,
   num.bootstraps = 1000, genome = c("hg19", "hg38", "mm9", "mm10"),
-  other = NULL, bulk = FALSE, boot.parallel = TRUE, boot.cores = 2)
+  other = NULL, group = FALSE, boot.parallel = TRUE,
+  boot.cores = 2)
 }
 \arguments{
 \item{obj}{Input SummarizedExperiment object}
@@ -30,7 +31,7 @@ getATACABsignal(obj, res = 1e+06, parallel = TRUE, chr = NULL,
 
 \item{other}{Another arbitrary genome to compute compartments on}
 
-\item{bulk}{Whether to treat this as a bulk set of samples}
+\item{group}{Whether to treat this as a group set of samples}
 
 \item{boot.parallel}{Whether to run the bootstrapping in parallel}
 
@@ -43,6 +44,6 @@ A RaggedExperiment of inferred compartments
 \code{getATACABsignal} returns estimated A/B compartments from ATAC-seq data.
 }
 \examples{
-data("bulkATAC_raw_filtered_chr14", package = "compartmap")
+data("groupATAC_raw_filtered_chr14", package = "compartmap")
 atac_compartments <- getATACABsignal(filtered.data.chr14, parallel=F, chr="chr14", bootstrap=F, genome="hg19")
 }

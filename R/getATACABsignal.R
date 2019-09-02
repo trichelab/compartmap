@@ -13,7 +13,7 @@
 #' @param num.bootstraps How many bootstraps to run
 #' @param genome What genome to work on ("hg19", "hg38", "mm9", "mm10")
 #' @param other Another arbitrary genome to compute compartments on
-#' @param bulk Whether to treat this as a bulk set of samples
+#' @param group Whether to treat this as a group set of samples
 #' @param boot.parallel Whether to run the bootstrapping in parallel
 #' @param boot.cores How many cores to use for the bootstrapping
 #'
@@ -27,14 +27,14 @@
 #' @import BSgenome.Mmusculus.UCSC.mm9
 #' @export
 #' @examples
-#' data("bulkATAC_raw_filtered_chr14", package = "compartmap")
+#' data("groupATAC_raw_filtered_chr14", package = "compartmap")
 #' atac_compartments <- getATACABsignal(filtered.data.chr14, parallel=F, chr="chr14", bootstrap=F, genome="hg19")
 
 getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                              targets = NULL, cores = 2,
                              bootstrap = TRUE, num.bootstraps = 1000,
                              genome = c("hg19", "hg38", "mm9", "mm10"),
-                             other = NULL, bulk = FALSE,
+                             other = NULL, group = FALSE,
                              boot.parallel = TRUE, boot.cores = 2) {
   
   #gather the chromosomes we are working on
@@ -99,7 +99,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   #initialize global means
   #gmeans <- getGlobalMeans(obj, targets = targets, assay = "atac")
   
-  if (parallel & isFALSE(bulk)) {
+  if (parallel & isFALSE(group)) {
     atac.compartments <- mclapply(columns, function(s) {
       obj.sub <- obj[,s]
       message("Working on ", s)
@@ -111,7 +111,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     }, mc.cores = cores)
   }
   
-  if (isFALSE(bulk)) {
+  if (isFALSE(group)) {
     atac.compartments <- lapply(columns, function(s) {
       obj.sub <- obj[,s]
       message("Working on ", s)
@@ -121,6 +121,24 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
                                                                cores = boot.cores)), "GRangesList")))
     })
+  }
+  
+  if (parallel & isTRUE(group)) {
+    atac.compartments <- sort(unlist(as(mclapply(chr, function(c) {
+      atacCompartments(obj, obj, res = res,
+                        chr = c, targets = targets, genome = genome,
+                        bootstrap = bootstrap,num.bootstraps = num.bootstraps,
+                        parallel = boot.parallel, cores = boot.cores)}, mc.cores = cores),
+      "GRangesList")))
+  }
+  
+  if (isTRUE(group)) {
+    atac.compartments <- sort(unlist(as(lapply(chr, function(c) {
+      atacCompartments(obj, obj, res = res,
+                        chr = c, targets = targets, genome = genome,
+                        bootstrap = bootstrap,num.bootstraps = num.bootstraps,
+                        parallel = boot.parallel, cores = boot.cores)}),
+      "GRangesList")))
   }
   
   #convert to GRangesList

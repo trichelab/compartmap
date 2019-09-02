@@ -7,7 +7,7 @@
 getArrayABsignal(obj, res = 1e+06, parallel = TRUE, chr = NULL,
   targets = NULL, preprocess = TRUE, cores = 2, bootstrap = TRUE,
   num.bootstraps = 1000, genome = c("hg19", "hg38", "mm9", "mm10"),
-  other = NULL, array.type = c("hm450", "EPIC"), bulk = FALSE,
+  other = NULL, array.type = c("hm450", "EPIC"), group = FALSE,
   boot.parallel = TRUE, boot.cores = 2)
 }
 \arguments{
@@ -35,7 +35,7 @@ getArrayABsignal(obj, res = 1e+06, parallel = TRUE, chr = NULL,
 
 \item{array.type}{What type of array is this ("hm450", "EPIC")}
 
-\item{bulk}{Whether to treat this as a bulk set of samples}
+\item{group}{Whether to treat this as a group set of samples}
 
 \item{boot.parallel}{Whether to run the bootstrapping in parallel}
 

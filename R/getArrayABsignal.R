@@ -15,7 +15,7 @@
 #' @param genome What genome to work on ("hg19", "hg38", "mm9", "mm10")
 #' @param other Another arbitrary genome to compute compartments on
 #' @param array.type What type of array is this ("hm450", "EPIC")
-#' @param bulk Whether to treat this as a bulk set of samples
+#' @param group Whether to treat this as a group set of samples
 #' @param boot.parallel Whether to run the bootstrapping in parallel
 #' @param boot.cores How many cores to use for the bootstrapping
 #'
@@ -37,7 +37,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                              bootstrap = TRUE, num.bootstraps = 1000,
                              genome = c("hg19", "hg38", "mm9", "mm10"),
                              other = NULL, array.type = c("hm450", "EPIC"),
-                             bulk = FALSE, boot.parallel = TRUE, boot.cores = 2) {
+                             group = FALSE, boot.parallel = TRUE, boot.cores = 2) {
   
   #preprocess the arrays
   if (preprocess) {
@@ -108,7 +108,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   #initialize global means
   #gmeans <- getGlobalMeans(obj, targets = targets, assay = "array")
   
-  if (parallel & isFALSE(bulk)) {
+  if (parallel & isFALSE(group)) {
     array.compartments <- mclapply(columns, function(s) {
       obj.sub <- obj[,s]
       message("Working on ", s)
@@ -120,7 +120,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     }, mc.cores = cores)
   }
   
-  if (isFALSE(bulk)) {
+  if (isFALSE(group)) {
     array.compartments <- lapply(columns, function(s) {
       obj.sub <- obj[,s]
       message("Working on ", s)
@@ -130,6 +130,24 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
                                                                cores = boot.cores)), "GRangesList")))
     })
+  }
+  
+  if (parallel & isTRUE(group)) {
+    array.compartments <- sort(unlist(as(mclapply(chr, function(c) {
+      arrayCompartments(obj, obj, res = res,
+                        chr = c, targets = targets, genome = genome,
+                        bootstrap = bootstrap,num.bootstraps = num.bootstraps,
+                        parallel = boot.parallel, cores = boot.cores)}, mc.cores = cores),
+      "GRangesList")))
+  }
+  
+  if (isTRUE(group)) {
+    array.compartments <- sort(unlist(as(lapply(chr, function(c) {
+      arrayCompartments(obj, obj, res = res,
+                        chr = c, targets = targets, genome = genome,
+                        bootstrap = bootstrap,num.bootstraps = num.bootstraps,
+                        parallel = boot.parallel, cores = boot.cores)}),
+      "GRangesList")))
   }
   
   #convert to GRangesList

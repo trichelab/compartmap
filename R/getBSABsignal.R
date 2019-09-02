@@ -14,7 +14,7 @@
 #' @param num.bootstraps How many bootstraps to run
 #' @param genome What genome to work on ("hg19", "hg38", "mm9", "mm10")
 #' @param other Another arbitrary genome to compute compartments on
-#' @param bulk Whether to treat this as a bulk set of samples
+#' @param group Whether to treat this as a group set of samples
 #' @param boot.parallel Whether to run the bootstrapping in parallel
 #' @param boot.cores How many cores to use for the bootstrapping
 #'
@@ -36,7 +36,7 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                              bootstrap = TRUE, num.bootstraps = 1000,
                              genome = c("hg19", "hg38", "mm9", "mm10"),
                              other = NULL,
-                             bulk = FALSE, boot.parallel = TRUE, boot.cores = 2) {
+                             group = FALSE, boot.parallel = TRUE, boot.cores = 2) {
   
   #preprocess the wgbss
   if (preprocess) {
@@ -105,7 +105,7 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   #initialize global means
   #gmeans <- getGlobalMeans(obj, targets = targets, assay = "bisulfite")
   
-  if (parallel & isFALSE(bulk)) {
+  if (parallel & isFALSE(group)) {
     wgbs.compartments <- mclapply(columns, function(s) {
       obj.sub <- obj[,s]
       message("Working on ", s)
@@ -117,7 +117,7 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     }, mc.cores = cores)
   }
   
-  if (isFALSE(bulk)) {
+  if (isFALSE(group)) {
     wgbs.compartments <- lapply(columns, function(s) {
       obj.sub <- obj[,s]
       message("Working on ", s)
@@ -129,6 +129,24 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     })
   }
   
+  if (parallel & isTRUE(group)) {
+    wgbs.compartments <- sort(unlist(as(mclapply(chr, function(c) {
+      wgbsCompartments(obj, obj, res = res,
+                        chr = c, targets = targets, genome = genome,
+                        bootstrap = bootstrap,num.bootstraps = num.bootstraps,
+                        parallel = boot.parallel, cores = boot.cores)}, mc.cores = cores),
+      "GRangesList")))
+  }
+  
+  if (isTRUE(group)) {
+    wgbs.compartments <- sort(unlist(as(lapply(chr, function(c) {
+      wgbsCompartments(obj, obj, res = res,
+                        chr = c, targets = targets, genome = genome,
+                        bootstrap = bootstrap,num.bootstraps = num.bootstraps,
+                        parallel = boot.parallel, cores = boot.cores)}),
+      "GRangesList")))
+  }
+  
   #convert to GRangesList
   wgbs.compartments <- as(wgbs.compartments, "GRangesList")
   #return as a RaggedExperiment
@@ -137,7 +155,7 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
 
 #' Preprocess BS-seq for compartment inference
 #'
-#' @name preprocessWGBS
+#' @name preprocessBSseq
 #'
 #' @param obj Input SummarizedExperiment
 #' @param genome What genome are we working on ("hg19", "hg38", "mm9", "mm10")
