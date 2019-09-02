@@ -46,17 +46,22 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
   if (is.null(prior.means)) {
     prior.means <- getGlobalMeans(obj=original.x, targets=targets, assay=assay)
   }
+  
+  #helper summary function
+  atac_fun <- function(x) {
+    return(sqrt(mean(x)))
+  }
 
   #bin the input
   bin.mat <- suppressMessages(switch(assay,
                                      atac = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
-                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=sum,
+                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=atac_fun,
                                                          genome = genome),
                                      array = getBinMatrix(x=as.matrix(cbind(flogit(assays(original.x)$Beta), prior.means)),
                                                          genloc=rowRanges(x), chr=chr, res=res, FUN=median,
                                                          genome = genome),
                                      bisulfite = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
-                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=median,
+                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=mean,
                                                          genome = genome)))
   
   #shrink the bins using a James-Stein Estimator
@@ -78,16 +83,15 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
 
 #helper functions for computing shrunken means
 #shrink bins in (sc)ATAC-seq data
-.shrinkATAC <- function(x, prior = NULL, offset = 0.0001,
-                        targets = NULL) {
+.shrinkATAC <- function(x, prior = NULL, targets = NULL) {
   if (!is.null(targets)) {
-    C <- sd(log(x[targets] + offset))
+    C <- sd(x[targets])
   } else {
-    C <- sd(log(x + offset))
+    C <- sd(x)
   }
-  prior.m <- log(prior + offset)
-  #convert back to counts
-  return(round(exp(prior.m + C*(log(x + offset) - prior.m))))
+  prior.m <- prior
+  #convert back to beta values
+  return(prior.m + C*(x - prior.m))
 }
 
 #shrink bins in methylation arrays

@@ -118,8 +118,8 @@ plotAB <- function(x, chr = NULL, what = c("score", "flip.score"), main="",ylim=
                   score = as(x$pc, "matrix"),
                   flip.score = as(x$flip.score, "matrix"))
     }
-    if (filter) x <- x[abs(x) > filter.min.eigen]
     if (unitarize) x <- .unitarize(x)
+    if (filter) x <- x[abs(x) > filter.min.eigen]
     x <- as.numeric(x)
     if (reverse) x <- -x
   
