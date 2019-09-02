@@ -141,6 +141,10 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       "GRangesList")))
   }
   
+  #if group-level treat a little differently
+  if (group) {
+    return(atac.compartments)
+  }
   #convert to GRangesList
   atac.compartments <- as(atac.compartments, "GRangesList")
   #return as a RaggedExperiment

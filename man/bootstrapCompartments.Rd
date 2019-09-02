@@ -7,7 +7,8 @@
 bootstrapCompartments(obj, original.obj, bootstrap.samples = 1000,
   chr = "chr14", assay = c("array", "atac", "bisulfite"),
   parallel = TRUE, cores = 2, targets = NULL, res = 1e+06,
-  genome = c("hg19", "hg38", "mm9", "mm10"), q = 0.95, svd = NULL)
+  genome = c("hg19", "hg38", "mm9", "mm10"), q = 0.95, svd = NULL,
+  group = FALSE)
 }
 \arguments{
 \item{obj}{List object of computed compartments for a sample with 'pc' and 'gr' as elements}
@@ -33,6 +34,8 @@ bootstrapCompartments(obj, original.obj, bootstrap.samples = 1000,
 \item{q}{What sort of confidence intervals are we computing (e.g. 0.95 for 95\% CI)}
 
 \item{svd}{The original compartment calls as a GRanges object}
+
+\item{group}{Whether this is for group-level inference}
 }
 \value{
 Compartment estimates with summarized bootstraps and confidence intervals

@@ -14,6 +14,7 @@
 #' @param genome What genome are we working on
 #' @param q What sort of confidence intervals are we computing (e.g. 0.95 for 95\% CI)
 #' @param svd The original compartment calls as a GRanges object
+#' @param group Whether this is for group-level inference
 #'
 #' @return Compartment estimates with summarized bootstraps and confidence intervals
 #' @import parallel
@@ -25,7 +26,8 @@
 bootstrapCompartments <- function(obj, original.obj, bootstrap.samples = 1000,
                                   chr = "chr14", assay = c("array", "atac", "bisulfite"),
                                   parallel = TRUE, cores = 2, targets = NULL, res = 1e6,
-                                  genome = c("hg19", "hg38", "mm9", "mm10"), q = 0.95, svd = NULL) {
+                                  genome = c("hg19", "hg38", "mm9", "mm10"), q = 0.95,
+                                  svd = NULL, group = FALSE) {
   #function for nonparametric bootstrap of compartments and compute 95% CIs
   #check input
   #match the assay args
@@ -64,7 +66,8 @@ bootstrapCompartments <- function(obj, original.obj, bootstrap.samples = 1000,
       #get the shrunken bins with new global mean
       s.bins <- shrinkBins(obj, original.obj, prior.means = getGlobalMeans(resamp.se, targets = targets, assay = assay),
                            chr = chr, res = res, assay = assay, genome = genome)
-      cor.bins <- getCorMatrix(s.bins, squeeze = TRUE)
+      if (group) cor.bins <- getCorMatrix(s.bins, squeeze = FALSE)
+      if (isFALSE(group)) cor.bins <- getCorMatrix(s.bins, squeeze = TRUE)
       #Stupid check for perfect correlation with global mean
       if (any(is.na(cor.bins$binmat.cor))) {
         absig <- matrix(rep(NA, nrow(cor.bins$binmat.cor)))

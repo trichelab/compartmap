@@ -63,7 +63,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                 genome = c("hg19", "hg38", "mm9", "mm10"),
                                 prior.means = NULL, bootstrap = TRUE,
                                 num.bootstraps = 1000, parallel = FALSE,
-                                cores = 2) {
+                                cores = 2, group = FALSE) {
     #this is the main analysis function for computing compartments from arrays
     #make sure the input is sane
     if (!checkAssayType(obj)) stop("Input needs to be a SummarizedExperiment")
@@ -84,7 +84,8 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                            res = res, targets = targets, assay = "array",
                            genome = genome)
     #compute correlations
-    obj.cor <- getCorMatrix(obj.bins, squeeze = TRUE)
+    if (group) obj.cor <- getCorMatrix(obj.bins, squeeze = FALSE)
+    if (isFALSE(group)) obj.cor <- getCorMatrix(obj.bins, squeeze = TRUE)
     if (any(is.na(obj.cor$binmat.cor))) {
       obj.cor$gr$pc <- matrix(rep(NA, nrow(obj.cor$binmat.cor)))
       obj.svd <- obj.cor$gr
@@ -99,7 +100,8 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     #always compute confidence intervals too
     obj.bootstrap <- bootstrapCompartments(obj, original.obj, bootstrap.samples = num.bootstraps,
                                            chr = chr, assay = "array", parallel = parallel, cores = cores,
-                                           targets = targets, res = res, genome = genome, q = 0.95, svd = obj.svd)
+                                           targets = targets, res = res, genome = genome, q = 0.95,
+                                           svd = obj.svd, group = group)
     
     #combine and return
     return(obj.bootstrap)
@@ -116,7 +118,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                                                chr = c, targets = targets, genome = genome,
                                                                bootstrap = bootstrap,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
-                                                               cores = boot.cores)), "GRangesList")))
+                                                               cores = boot.cores, group = group)), "GRangesList")))
     }, mc.cores = cores)
   }
   
@@ -128,7 +130,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                                                chr = c, targets = targets, genome = genome,
                                                                bootstrap = bootstrap,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
-                                                               cores = boot.cores)), "GRangesList")))
+                                                               cores = boot.cores, group = group)), "GRangesList")))
     })
   }
   
@@ -137,8 +139,8 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       arrayCompartments(obj, obj, res = res,
                         chr = c, targets = targets, genome = genome,
                         bootstrap = bootstrap,num.bootstraps = num.bootstraps,
-                        parallel = boot.parallel, cores = boot.cores)}, mc.cores = cores),
-      "GRangesList")))
+                        parallel = boot.parallel, cores = boot.cores, group = group)},
+      mc.cores = cores), "GRangesList")))
   }
   
   if (isTRUE(group)) {
@@ -146,12 +148,16 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       arrayCompartments(obj, obj, res = res,
                         chr = c, targets = targets, genome = genome,
                         bootstrap = bootstrap,num.bootstraps = num.bootstraps,
-                        parallel = boot.parallel, cores = boot.cores)}),
+                        parallel = boot.parallel, cores = boot.cores, group = group)}),
       "GRangesList")))
   }
-  
+
+  #if group-level treat a little differently
+  if (group) {
+    return(array.compartments)
+  }
   #convert to GRangesList
-  array.compartments <- as(array.compartments, "GRangesList")
+  if (isFALSE(group)) array.compartments <- as(array.compartments, "GRangesList")
   #return as a RaggedExperiment
   return(RaggedExperiment(array.compartments, colData = colData(obj)))
 }

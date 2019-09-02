@@ -147,6 +147,10 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       "GRangesList")))
   }
   
+  #if group-level treat a little differently
+  if (group) {
+    return(wgbs.compartments)
+  }
   #convert to GRangesList
   wgbs.compartments <- as(wgbs.compartments, "GRangesList")
   #return as a RaggedExperiment

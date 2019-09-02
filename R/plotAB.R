@@ -112,7 +112,7 @@ plotAB <- function(x, chr = NULL, main="",ylim=c(-1, 1), unitarize=FALSE, revers
   } else {
     if (is(x, "GRanges")) {
       if (!is.null(chr)) x <- keepSeqlevels(x, chr, pruning.mode = "coarse")
-      x <- as(x, "matrix") # coerce
+      x <- as(x$pc, "matrix") # coerce
     }
     #if (filter) x <- x[abs(x) > filter.min.eigen,]
     if (unitarize) x <- .unitarize(x)
@@ -123,7 +123,7 @@ plotAB <- function(x, chr = NULL, main="",ylim=c(-1, 1), unitarize=FALSE, revers
     col <- rep(top.col, n)
     col[x<0] <- bot.col
     barplot(x, ylim=ylim, 
-            bty="n", xlab="", ylab="",border=col, col=col, main=main)
+            bty="n", xlab="", ylab="Eigenvector", border=col, col=col, main=main)
     }
   }
 
