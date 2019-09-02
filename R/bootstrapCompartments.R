@@ -44,7 +44,6 @@ bootstrapCompartments <- function(obj, original.obj, bootstrap.samples = 1000,
   #if we are using targeted means
   if (!is.null(targets)) original.obj <- original.obj[,targets]
   if (ncol(original.obj) < 6) stop("We need more than 5 samples to bootstrap with for the results to be meaningful.")
-  
   if (!parallel) {
     message("Not bootstrapping in parallel will take a long time...")
     #bootstrap and recompute compartments

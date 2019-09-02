@@ -54,11 +54,11 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                 genome = c("hg19", "hg38", "mm9", "mm10"),
                                 prior.means = NULL, bootstrap = TRUE,
                                 num.bootstraps = 1000, parallel = FALSE,
-                                cores = 2) {
+                                cores = 2, group = group) {
     #this is the main analysis function for computing compartments from atacs
     #make sure the input is sane
     if (!checkAssayType(obj)) stop("Input needs to be a SummarizedExperiment")
-    
+
     #what genome do we have
     genome <- match.arg(genome)
     
@@ -75,7 +75,8 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                            res = res, targets = targets, assay = "atac",
                            genome = genome)
     #compute correlations
-    obj.cor <- getCorMatrix(obj.bins, squeeze = TRUE)
+    if (group) obj.cor <- getCorMatrix(obj.bins, squeeze = FALSE)
+    if (isFALSE(group)) obj.cor <- getCorMatrix(obj.bins, squeeze = TRUE)
     if (any(is.na(obj.cor$binmat.cor))) {
       obj.cor$gr$pc <- matrix(rep(NA, nrow(obj.cor$binmat.cor)))
       obj.svd <- obj.cor$gr
@@ -90,7 +91,8 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     #always compute confidence intervals too
     obj.bootstrap <- bootstrapCompartments(obj, original.obj, bootstrap.samples = num.bootstraps,
                                            chr = chr, assay = "atac", parallel = parallel, cores = cores,
-                                           targets = targets, res = res, genome = genome, q = 0.95, svd = obj.svd)
+                                           targets = targets, res = res, genome = genome, q = 0.95,
+                                           svd = obj.svd, group = group)
     
     #combine and return
     return(obj.bootstrap)
@@ -107,7 +109,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                                                chr = c, targets = targets, genome = genome,
                                                                bootstrap = bootstrap,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
-                                                               cores = boot.cores)), "GRangesList")))
+                                                               cores = boot.cores, group = group)), "GRangesList")))
     }, mc.cores = cores)
   }
   
@@ -119,7 +121,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                                                chr = c, targets = targets, genome = genome,
                                                                bootstrap = bootstrap,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
-                                                               cores = boot.cores)), "GRangesList")))
+                                                               cores = boot.cores, group = group)), "GRangesList")))
     })
   }
   
@@ -128,7 +130,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       atacCompartments(obj, obj, res = res,
                         chr = c, targets = targets, genome = genome,
                         bootstrap = bootstrap,num.bootstraps = num.bootstraps,
-                        parallel = boot.parallel, cores = boot.cores)}, mc.cores = cores),
+                        parallel = boot.parallel, cores = boot.cores, group = group)}, mc.cores = cores),
       "GRangesList")))
   }
   
@@ -137,7 +139,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       atacCompartments(obj, obj, res = res,
                         chr = c, targets = targets, genome = genome,
                         bootstrap = bootstrap,num.bootstraps = num.bootstraps,
-                        parallel = boot.parallel, cores = boot.cores)}),
+                        parallel = boot.parallel, cores = boot.cores, group = group)}),
       "GRangesList")))
   }
   
