@@ -49,7 +49,7 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
   
   #helper summary function
   atac_fun <- function(x) {
-    return(sqrt(mean(x)) * length(x))
+    return(sqrt(sum(x)) * length(x))
   }
 
   #bin the input
@@ -63,6 +63,8 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
                                      bisulfite = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
                                                          genloc=rowRanges(x), chr=chr, res=res, FUN=mean,
                                                          genome = genome)))
+  
+  
   
   #shrink the bins using a James-Stein Estimator
   x.shrink <- t(apply(bin.mat$x, 1, function(r) {
