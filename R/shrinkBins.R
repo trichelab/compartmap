@@ -49,7 +49,7 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
   
   #helper summary function
   atac_fun <- function(x) {
-    return(sqrt(sum(x)) * length(x))
+    return(sqrt(sum(x) * length(x)))
   }
 
   #bin the input
