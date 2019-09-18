@@ -50,7 +50,7 @@ getABSignal <- function(x, squeeze = FALSE,
   pc <- switch(assay,
                array = meanSmoother(pc, k=1, iter=2),
                atac = meanSmoother(pc, k=2, iter=2),
-               bisulfite = meanSmoother(pc, k=2, iter=3))
+               bisulfite = meanSmoother(pc, k=1, iter=2))
   message("Done smoothing.")
   gr <- x$gr
   gr$pc <- pc

@@ -60,7 +60,7 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
                                                          genloc=rowRanges(x), chr=chr, res=res, FUN=median,
                                                          genome = genome),
                                      bisulfite = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
-                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=mean,
+                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=median,
                                                          genome = genome)))
   
   #shrink the bins using a James-Stein Estimator
