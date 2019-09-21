@@ -64,8 +64,8 @@ getBinMatrix <- function(x, genloc, chr = "chr1", chr.start = 0,
     if (genome %in% c("hg19", "hg38", "mm9", "mm10")) {
       chr.end <- switch(genome,
                         hg19 = seqlengths(Homo.sapiens)[chr],
-                        hg38 = seqlengths(BSgenome.Hsapiens.UCSC.hg38),
-                        mm9 = seqlengths(BSgenome.Mmusculus.UCSC.mm9),
+                        hg38 = seqlengths(BSgenome.Hsapiens.UCSC.hg38)[chr],
+                        mm9 = seqlengths(BSgenome.Mmusculus.UCSC.mm9)[chr],
                         mm10 = seqlengths(Mus.musculus)[chr])
     }
     else {
