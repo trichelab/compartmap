@@ -52,11 +52,6 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
     return(sqrt(mean(x)) * length(x))
   }
   
-  #weighted mean for bisulfite
-  bisulfite_fun <- function(x) {
-    return((mean(x) * length(x)))
-  }
-  
   #bin the input
   bin.mat <- suppressMessages(switch(assay,
                                      atac = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
@@ -66,7 +61,7 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
                                                          genloc=rowRanges(x), chr=chr, res=res, FUN=median,
                                                          genome = genome),
                                      bisulfite = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
-                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=bisulfite_fun,
+                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=mean,
                                                          genome = genome)))
   
   #shrink the bins using a James-Stein Estimator

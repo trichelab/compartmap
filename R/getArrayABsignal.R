@@ -114,15 +114,16 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     array.compartments <- mclapply(columns, function(s) {
       obj.sub <- obj[,s]
       message("Working on ", s)
-      sort(unlist(as(lapply(chr, function(c) arrayCompartments(obj.sub, obj, res = res,
+      saveRDS(sort(unlist(as(lapply(chr, function(c) arrayCompartments(obj.sub, obj, res = res,
                                                                chr = c, targets = targets, genome = genome,
                                                                bootstrap = bootstrap,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
-                                                               cores = boot.cores, group = group)), "GRangesList")))
-    }, mc.cores = cores)
+                                                               cores = boot.cores, group = group)), "GRangesList"))), 
+              file = paste0(s, "compartment_checkpoint.rds"))
+    }, mc.cores = cores, mc.preschedule = F)
   }
   
-  if (isFALSE(group)) {
+  if (!parallel & isFALSE(group)) {
     array.compartments <- lapply(columns, function(s) {
       obj.sub <- obj[,s]
       message("Working on ", s)

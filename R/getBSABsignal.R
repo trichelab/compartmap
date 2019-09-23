@@ -118,7 +118,7 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     }, mc.cores = cores)
   }
   
-  if (isFALSE(group)) {
+  if (!parallel & isFALSE(group)) {
     wgbs.compartments <- lapply(columns, function(s) {
       obj.sub <- obj[,s]
       message("Working on ", s)
