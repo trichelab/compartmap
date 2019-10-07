@@ -78,6 +78,14 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
            bisulfite = .shrinkBS(x=r.samps, prior=r.prior.m, targets=targets))
     }))
   
+  #drop things that are zeroes as global means
+  #the correlation will break otherwise
+  if (any(bin.mat$x[,"globalMean"] == 0)) {
+    bin.mat$gr <- bin.mat$gr[bin.mat$x[,"globalMean"] != 0,]
+    bin.mat$x <- bin.mat$x[bin.mat$x[,"globalMean"] != 0,]
+    x.shrink <- x.shrink[bin.mat$x[,"globalMean"] != 0,]
+  }
+  
   return(list(gr=bin.mat$gr, x=x.shrink[,colnames(x)], gmeans=bin.mat$x[,"globalMean"]))
 }
 
