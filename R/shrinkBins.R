@@ -82,8 +82,8 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
   #the correlation will break otherwise
   if (any(bin.mat$x[,"globalMean"] == 0)) {
     bin.mat$gr <- bin.mat$gr[bin.mat$x[,"globalMean"] != 0,]
-    bin.mat$x <- bin.mat$x[bin.mat$x[,"globalMean"] != 0,]
     x.shrink <- x.shrink[bin.mat$x[,"globalMean"] != 0,]
+    bin.mat$x <- bin.mat$x[bin.mat$x[,"globalMean"] != 0,]
   }
   
   return(list(gr=bin.mat$gr, x=x.shrink[,colnames(x)], gmeans=bin.mat$x[,"globalMean"]))
