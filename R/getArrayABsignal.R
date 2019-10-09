@@ -158,7 +158,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     return(array.compartments)
   }
   #convert to GRangesList
-  if (isFALSE(group)) array.compartments <- as(array.compartments, "GRangesList")
+  if (isFALSE(group)) array.compartments <- as(array.compartments, "CompressedGRangesList")
   #return as a RaggedExperiment
   return(RaggedExperiment(array.compartments, colData = colData(obj)))
 }

@@ -79,6 +79,8 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
     }))
   
   #drop things that are zeroes as global means
+  #this can and does crop up in resampling when you have something sparse
+  #for instance single-cell data...
   #the correlation will break otherwise
   if (any(bin.mat$x[,"globalMean"] == 0)) {
     bin.mat$gr <- bin.mat$gr[bin.mat$x[,"globalMean"] != 0,]

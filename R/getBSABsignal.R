@@ -153,7 +153,7 @@ getBSABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     return(wgbs.compartments)
   }
   #convert to GRangesList
-  wgbs.compartments <- as(wgbs.compartments, "GRangesList")
+  wgbs.compartments <- as(wgbs.compartments, "CompressedGRangesList")
   #return as a RaggedExperiment
   return(RaggedExperiment(wgbs.compartments, colData = colData(obj)))
 }
