@@ -56,7 +56,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     message("Pre-computing the bootstrap global means.")
     bmeans <- precomputeBootstrapMeans(obj = obj, targets = targets, num.bootstraps = num.bootstraps,
                                        assay = "atac", parallel = parallel, num.cores = cores)
-    }
+  }
   
   #worker function
   atacCompartments <- function(obj, original.obj, res = 1e6, chr = NULL, targets = NULL,
