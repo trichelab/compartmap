@@ -14,7 +14,7 @@
 \item{q}{quantile for eventual CI (e.g. 0.95 for a 95\\% binomial CI)}
 }
 \value{
-the "approximate" success probability for a smoothed CIs
+the \"approximate\" success probability for a smoothed CIs
 }
 \description{
 p_tilde in AC

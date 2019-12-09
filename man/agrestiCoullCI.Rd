@@ -14,7 +14,7 @@ agrestiCoullCI(n1, n0, q)
 \item{q}{quantile for eventual CI (e.g. 0.95 for a 95\\% binomial CI)}
 }
 \value{
-the "approximate" (q*100)\\% confidence interval for (p|n1,n0,q)
+the \"approximate\" (q*100)\\% confidence interval for (p|n1,n0,q)
 }
 \description{
 Agresti-Coull confidence interval for a binomial proportion
