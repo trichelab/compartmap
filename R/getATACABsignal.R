@@ -111,7 +111,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     #take care of the global means
     if (bootstrap) {
       #this assumes that we've alread computed the global means
-      bmeans <- as(bmeans, "GRanges")
+      bmeans <- as(bootstrap.means, "GRanges")
       bmeans <- keepSeqlevels(bmeans, chr, pruning.mode = "coarse")
       #go back to a matrix
       bmeans <- as(bmeans, "matrix")
