@@ -49,6 +49,15 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   columns <- colnames(obj)
   names(columns) <- columns
   
+  #precompute global means
+  prior.means <- getGlobalMeans(obj = obj, targets = targets, assay = "atac")
+  
+  if (bootstrap) {
+    message("Pre-computing the bootstrap global means.")
+    bmeans <- precomputeBootstrapMeans(obj = obj, targets = targets, num.bootstraps = num.bootstraps,
+                                       assay = "atac", parallel = parallel, num.cores = cores)
+    }
+  
   #worker function
   atacCompartments <- function(obj, original.obj, res = 1e6, chr = NULL, targets = NULL,
                                 genome = c("hg19", "hg38", "mm9", "mm10"),
@@ -69,6 +78,16 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     message("Computing compartments for ", chr)
     obj <- keepSeqlevels(obj, chr, pruning.mode = "coarse")
     original.obj <- keepSeqlevels(original.obj, chr, pruning.mode = "coarse")
+    
+    #take care of the global means
+    if (!is.null(prior.means)) {
+      #this assumes that we've alread computed the global means
+      pmeans <- as(prior.means, "GRanges")
+      pmeans <- keepSeqlevels(pmeans, chr, pruning.mode = "coarse")
+      #go back to a matrix
+      prior.means <- as(pmeans, "matrix")
+      colnames(prior.means) <- "globalMean"
+    }
     
     #get the shrunken bins
     obj.bins <- shrinkBins(obj, original.obj, prior.means = prior.means, chr = chr,
@@ -107,7 +126,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       message("Working on ", s)
       sort(unlist(as(lapply(chr, function(c) atacCompartments(obj.sub, obj, res = res,
                                                                chr = c, targets = targets, genome = genome,
-                                                               bootstrap = bootstrap,
+                                                               bootstrap = bootstrap, prior.means = prior.means,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
                                                                cores = boot.cores, group = group)), "GRangesList")))
     }, mc.cores = cores)
@@ -119,7 +138,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       message("Working on ", s)
       sort(unlist(as(lapply(chr, function(c) atacCompartments(obj.sub, obj, res = res,
                                                                chr = c, targets = targets, genome = genome,
-                                                               bootstrap = bootstrap,
+                                                               bootstrap = bootstrap, prior.means = prior.means,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
                                                                cores = boot.cores, group = group)), "GRangesList")))
     })
@@ -129,7 +148,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     atac.compartments <- sort(unlist(as(mclapply(chr, function(c) {
       atacCompartments(obj, obj, res = res,
                         chr = c, targets = targets, genome = genome,
-                        bootstrap = bootstrap,num.bootstraps = num.bootstraps,
+                        bootstrap = bootstrap,num.bootstraps = num.bootstraps, prior.means = prior.means,
                         parallel = boot.parallel, cores = boot.cores, group = group)}, mc.cores = cores),
       "GRangesList")))
   }
@@ -137,7 +156,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   if (!parallel & isTRUE(group)) {
     atac.compartments <- sort(unlist(as(lapply(chr, function(c) {
       atacCompartments(obj, obj, res = res,
-                        chr = c, targets = targets, genome = genome,
+                        chr = c, targets = targets, genome = genome, prior.means = prior.means,
                         bootstrap = bootstrap,num.bootstraps = num.bootstraps,
                         parallel = boot.parallel, cores = boot.cores, group = group)}),
       "GRangesList")))
