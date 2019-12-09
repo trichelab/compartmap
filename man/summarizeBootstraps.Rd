@@ -16,7 +16,7 @@ summarizeBootstraps(
 
 \item{est.ab}{The original compartment calls}
 
-\item{q}{Confidence interval to compute (0.95 for 95\\% CI)}
+\item{q}{Confidence interval to compute (0.95 for 95 percent CI)}
 
 \item{assay}{Type of assay we are working with}
 }

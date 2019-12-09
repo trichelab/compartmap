@@ -4,7 +4,7 @@
 #'
 #' @param boot.list List of bootstraps as GRanges objects 
 #' @param est.ab The original compartment calls
-#' @param q Confidence interval to compute (0.95 for 95\% CI)
+#' @param q Confidence interval to compute (0.95 for 95 percent CI)
 #' @param assay Type of assay we are working with
 #'
 #' @return A GRanges object with bootstraps summarized

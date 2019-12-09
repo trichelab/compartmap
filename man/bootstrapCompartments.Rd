@@ -41,7 +41,7 @@ bootstrapCompartments(
 
 \item{genome}{What genome are we working on}
 
-\item{q}{What sort of confidence intervals are we computing (e.g. 0.95 for 95\\% CI)}
+\item{q}{What sort of confidence intervals are we computing (e.g. 0.95 for 95 percentCI)}
 
 \item{svd}{The original compartment calls as a GRanges object}
 

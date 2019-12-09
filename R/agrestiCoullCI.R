@@ -12,7 +12,7 @@
 #' @param n0  number of failures/zeroes
 #' @param q   quantile for eventual CI (e.g. 0.95 for a 95\% binomial CI)
 #'
-#' @return    the \"effective\" sample size for smoothed CIs
+#' @return    the effective sample size for smoothed CIs
 #'
 .n_approx <- function(n1, n0, q) (n0 + n1) + (.z(q)^2)
 
@@ -22,7 +22,7 @@
 #' @param n0  number of failures/zeroes
 #' @param q   quantile for eventual CI (e.g. 0.95 for a 95\% binomial CI)
 #'
-#' @return    the \"approximate\" success probability for a smoothed CIs
+#' @return    the approximate success probability for a smoothed CIs
 #' 
 .p_approx <- function(n1, n0, q) (1/.n_approx(n1, n0, q)) * (n1 + ((.z(q)^2)/2))
 
@@ -30,9 +30,9 @@
 #' 
 #' @param n1  number of successes/ones 
 #' @param n0  number of failures/zeroes
-#' @param q   quantile for eventual CI (e.g. 0.95 for a 95\% binomial CI)
+#' @param q   quantile for eventual CI (e.g. 0.95 for a 95 percent binomial CI)
 #'
-#' @return    the \"approximate\" (q*100)\% confidence interval for (p|n1,n0,q)
+#' @return    the approximate (q x 100) percent confidence interval for (p|n1,n0,q)
 #' @export
 #' 
 #' @examples 
