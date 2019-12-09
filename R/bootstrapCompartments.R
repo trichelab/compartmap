@@ -98,7 +98,7 @@ bootstrapCompartments <- function(obj, original.obj, bootstrap.samples = 1000,
       return(absig)
     }, mc.cores = cores)
   }
-  
+
   #summarize the bootstraps and compute confidence intervals
   resamp.compartments <- summarizeBootstraps(resamp.compartments, svd,
                                              q = q, assay = assay)
