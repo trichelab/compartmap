@@ -4,8 +4,7 @@
 \alias{cleanAssayRows}
 \title{Remove rows with NAs exceeding a threshold}
 \usage{
-cleanAssayRows(se, rowmax = 0.5, assay = c("array", "atac",
-  "bisulfite"))
+cleanAssayRows(se, rowmax = 0.5, assay = c("array", "atac", "bisulfite"))
 }
 \arguments{
 \item{se}{Input SummarizedExperiment object}

@@ -4,11 +4,21 @@
 \alias{bootstrapCompartments}
 \title{Non-parametric bootstrapping of compartments and summarization of bootstraps/compute confidence intervals}
 \usage{
-bootstrapCompartments(obj, original.obj, bootstrap.samples = 1000,
-  chr = "chr14", assay = c("array", "atac", "bisulfite"),
-  parallel = TRUE, cores = 2, targets = NULL, res = 1e+06,
-  genome = c("hg19", "hg38", "mm9", "mm10"), q = 0.95, svd = NULL,
-  group = FALSE)
+bootstrapCompartments(
+  obj,
+  original.obj,
+  bootstrap.samples = 1000,
+  chr = "chr14",
+  assay = c("array", "atac", "bisulfite"),
+  parallel = TRUE,
+  cores = 2,
+  targets = NULL,
+  res = 1e+06,
+  genome = c("hg19", "hg38", "mm9", "mm10"),
+  q = 0.95,
+  svd = NULL,
+  group = FALSE
+)
 }
 \arguments{
 \item{obj}{List object of computed compartments for a sample with 'pc' and 'gr' as elements}
@@ -31,7 +41,7 @@ bootstrapCompartments(obj, original.obj, bootstrap.samples = 1000,
 
 \item{genome}{What genome are we working on}
 
-\item{q}{What sort of confidence intervals are we computing (e.g. 0.95 for 95\% CI)}
+\item{q}{What sort of confidence intervals are we computing (e.g. 0.95 for 95\\% CI)}
 
 \item{svd}{The original compartment calls as a GRanges object}
 

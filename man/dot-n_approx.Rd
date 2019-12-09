@@ -11,7 +11,7 @@
 
 \item{n0}{number of failures/zeroes}
 
-\item{q}{quantile for eventual CI (e.g. 0.95 for a 95\% binomial CI)}
+\item{q}{quantile for eventual CI (e.g. 0.95 for a 95\\% binomial CI)}
 }
 \value{
 the "effective" sample size for smoothed CIs

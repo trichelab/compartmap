@@ -4,8 +4,7 @@
 \alias{extractOpenClosed}
 \title{Get the open and closed compartment calls based on sign of singular values}
 \usage{
-extractOpenClosed(gr, cutoff = 0, assay = c("array", "atac",
-  "bisulfite"))
+extractOpenClosed(gr, cutoff = 0, assay = c("array", "atac", "bisulfite"))
 }
 \arguments{
 \item{gr}{Input GRanges with associated mcols that represent singular values}

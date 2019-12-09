@@ -4,8 +4,7 @@
 \alias{cleanAssayCols}
 \title{Remove columns/cells/samples with NAs exceeding a threshold}
 \usage{
-cleanAssayCols(se, colmax = 0.8, assay = c("array", "atac",
-  "bisulfite"))
+cleanAssayCols(se, colmax = 0.8, assay = c("array", "atac", "bisulfite"))
 }
 \arguments{
 \item{se}{Input SummarizedExperiment object}

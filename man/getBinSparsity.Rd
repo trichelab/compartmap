@@ -4,10 +4,17 @@
 \alias{getBinSparsity}
 \title{Compute the sparsity of each bin that will be used to infer compartments}
 \usage{
-getBinSparsity(mat, row.ranges, chr = "chr14", res = 1e+05,
-  min.depth = 1, scale.by.nonzero.bins = TRUE,
-  filter.zero.bins = TRUE, scale.by.resolution = FALSE,
-  species = c("human", "mouse"))
+getBinSparsity(
+  mat,
+  row.ranges,
+  chr = "chr14",
+  res = 1e+05,
+  min.depth = 1,
+  scale.by.nonzero.bins = TRUE,
+  filter.zero.bins = TRUE,
+  scale.by.resolution = FALSE,
+  species = c("human", "mouse")
+)
 }
 \arguments{
 \item{mat}{Input matrix (samples as columns and loci as rows)}

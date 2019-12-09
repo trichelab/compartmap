@@ -4,9 +4,16 @@
 \alias{imputeKNN}
 \title{Impute missing values/NAs with KNN}
 \usage{
-imputeKNN(obj, rowmax = 0.5, colmax = 0.8, k = 10, maxp = 1500,
-  in.place = TRUE, drop.sparse.samps = TRUE, assay = c("array",
-  "atac", "bisulfite"))
+imputeKNN(
+  obj,
+  rowmax = 0.5,
+  colmax = 0.8,
+  k = 10,
+  maxp = 1500,
+  in.place = TRUE,
+  drop.sparse.samps = TRUE,
+  assay = c("array", "atac", "bisulfite")
+)
 }
 \arguments{
 \item{obj}{Input SummarizedExperiment object}

@@ -4,15 +4,19 @@
 \alias{summarizeBootstraps}
 \title{Summarize the bootstrap compartment estimates and compute Agresti-Coull confidence intervals}
 \usage{
-summarizeBootstraps(boot.list, est.ab, q = 0.95, assay = c("array",
-  "atac", "bisulfite"))
+summarizeBootstraps(
+  boot.list,
+  est.ab,
+  q = 0.95,
+  assay = c("array", "atac", "bisulfite")
+)
 }
 \arguments{
 \item{boot.list}{List of bootstraps as GRanges objects}
 
 \item{est.ab}{The original compartment calls}
 
-\item{q}{Confidence interval to compute (0.95 for 95\% CI)}
+\item{q}{Confidence interval to compute (0.95 for 95\\% CI)}
 
 \item{assay}{Type of assay we are working with}
 }

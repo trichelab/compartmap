@@ -4,9 +4,15 @@
 \alias{filterCells}
 \title{Filter cells using either k-means or Dirichlet process means clustering of sparsity metrics}
 \usage{
-filterCells(sparsity.mat, rse.obj, cluster.method = c("kmeans",
-  "dpmeans"), clusters = NULL, tol = 0.1, plot.data = FALSE,
-  invert = FALSE)
+filterCells(
+  sparsity.mat,
+  rse.obj,
+  cluster.method = c("kmeans", "dpmeans"),
+  clusters = NULL,
+  tol = 0.1,
+  plot.data = FALSE,
+  invert = FALSE
+)
 }
 \arguments{
 \item{sparsity.mat}{A matrix of summarized sparsity measures}

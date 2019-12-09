@@ -5,8 +5,7 @@
 \alias{getOpenSeas}
 \title{Filter to open sea CpG loci}
 \usage{
-filterOpenSea(obj, genome = c("hg19", "hg38", "mm10", "mm9"),
-  other = NULL)
+filterOpenSea(obj, genome = c("hg19", "hg38", "mm10", "mm9"), other = NULL)
 
 getOpenSeas(gr)
 }

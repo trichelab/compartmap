@@ -4,10 +4,21 @@
 \alias{plotAB}
 \title{Plots A/B compartment estimates on a per chromosome basis}
 \usage{
-plotAB(x, chr = NULL, what = c("score", "flip.score"), main = "",
-  ylim = c(-1, 1), unitarize = FALSE, reverse = FALSE,
-  top.col = "deeppink4", bot.col = "grey50", with.ci = FALSE,
-  filter = TRUE, filter.min.eigen = 0.02, median.conf = FALSE)
+plotAB(
+  x,
+  chr = NULL,
+  what = c("score", "flip.score"),
+  main = "",
+  ylim = c(-1, 1),
+  unitarize = FALSE,
+  reverse = FALSE,
+  top.col = "deeppink4",
+  bot.col = "grey50",
+  with.ci = FALSE,
+  filter = TRUE,
+  filter.min.eigen = 0.02,
+  median.conf = FALSE
+)
 }
 \arguments{
 \item{x}{The matrix obejct returned from getCompartments}

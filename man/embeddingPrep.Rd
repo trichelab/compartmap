@@ -4,8 +4,16 @@
 \alias{embeddingPrep}
 \title{Filter and convert/cluster compartment calls for embedding and dimension reduction}
 \usage{
-embeddingPrep(obj, filter = TRUE, min.conf = 0.7, min.eigen = 0.02,
-  tf.idf = FALSE, cluster = TRUE, k = 10, dims = NULL)
+embeddingPrep(
+  obj,
+  filter = TRUE,
+  min.conf = 0.7,
+  min.eigen = 0.02,
+  tf.idf = FALSE,
+  cluster = TRUE,
+  k = 10,
+  dims = NULL
+)
 }
 \arguments{
 \item{obj}{Input either a RaggedExperiment or output from fixCompartments}

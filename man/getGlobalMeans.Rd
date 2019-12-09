@@ -4,13 +4,14 @@
 \alias{getGlobalMeans}
 \title{Get the global means of a matrix}
 \usage{
-getGlobalMeans(obj, targets = NULL, assay = c("array", "atac",
-  "bisulfite"))
+getGlobalMeans(obj, targets = NULL, assay = c("array", "atac", "bisulfite"))
 }
 \arguments{
 \item{obj}{Input SummarizedExperiment object}
 
 \item{targets}{Column names or indices to indicate which samples to shrink towards}
+
+\item{assay}{What type of assay the data are from}
 }
 \value{
 A vector of global or targeted means

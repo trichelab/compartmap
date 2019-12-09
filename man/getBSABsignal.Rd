@@ -4,11 +4,22 @@
 \alias{getBSABsignal}
 \title{Estimate A/B compartments from BS-seq data}
 \usage{
-getBSABsignal(obj, res = 1e+06, parallel = TRUE, chr = NULL,
-  targets = NULL, preprocess = TRUE, cores = 2, bootstrap = TRUE,
-  num.bootstraps = 1000, genome = c("hg19", "hg38", "mm9", "mm10"),
-  other = NULL, group = FALSE, boot.parallel = TRUE,
-  boot.cores = 2)
+getBSABsignal(
+  obj,
+  res = 1e+06,
+  parallel = TRUE,
+  chr = NULL,
+  targets = NULL,
+  preprocess = TRUE,
+  cores = 2,
+  bootstrap = TRUE,
+  num.bootstraps = 1000,
+  genome = c("hg19", "hg38", "mm9", "mm10"),
+  other = NULL,
+  group = FALSE,
+  boot.parallel = TRUE,
+  boot.cores = 2
+)
 }
 \arguments{
 \item{obj}{Input SummarizedExperiment object}
