@@ -23,6 +23,7 @@
 #'
 #' @examples
 #' 
+
 bootstrapCompartments <- function(obj, original.obj, bootstrap.samples = 1000,
                                   chr = "chr14", assay = c("array", "atac", "bisulfite"),
                                   parallel = TRUE, cores = 2, targets = NULL, res = 1e6,

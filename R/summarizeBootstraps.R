@@ -13,6 +13,7 @@
 #'
 #' @examples
 #' 
+
 summarizeBootstraps <- function(boot.list, est.ab, q = 0.95,
                                 assay = c("array", "atac", "bisulfite")) {
   #go through the estimated A/B compartments and compute proportions from the boot.list
