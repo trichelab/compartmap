@@ -34,6 +34,6 @@ Pre-compute the global means for bootstrapping compartments
 }
 \examples{
 data("meth_array_450k_chr14", package = "compartmap")
-array.bootstrap.global.means <- getGlobalMeans(array.data.chr14, assay = "array", num.bootstraps = 2)
+array.bootstrap.global.means <- precomputeBootstrapMeans(array.data.chr14, assay = "array", num.bootstraps = 2)
 
 }

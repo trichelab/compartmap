@@ -63,7 +63,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                 genome = c("hg19", "hg38", "mm9", "mm10"),
                                 prior.means = NULL, bootstrap = TRUE,
                                 num.bootstraps = 1000, parallel = FALSE,
-                                cores = 2, group = group) {
+                                cores = 2, group = group, bootstrap.means = NULL) {
     #this is the main analysis function for computing compartments from atacs
     #make sure the input is sane
     if (!checkAssayType(obj)) stop("Input needs to be a SummarizedExperiment")
@@ -108,10 +108,20 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     
     #bootstrap the estimates
     #always compute confidence intervals too
+    #take care of the global means
+    if (bootstrap) {
+      #this assumes that we've alread computed the global means
+      bmeans <- as(bmeans, "GRanges")
+      bmeans <- keepSeqlevels(bmeans, chr, pruning.mode = "coarse")
+      #go back to a matrix
+      bmeans <- as(bmeans, "matrix")
+      colnames(bmeans) <- rep("globalMean", ncol(bmeans))
+    }
+    
     obj.bootstrap <- bootstrapCompartments(obj, original.obj, bootstrap.samples = num.bootstraps,
                                            chr = chr, assay = "atac", parallel = parallel, cores = cores,
                                            targets = targets, res = res, genome = genome, q = 0.95,
-                                           svd = obj.svd, group = group)
+                                           svd = obj.svd, group = group, bootstrap.means = bmeans)
     
     #combine and return
     return(obj.bootstrap)
@@ -128,7 +138,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                                                chr = c, targets = targets, genome = genome,
                                                                bootstrap = bootstrap, prior.means = prior.means,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
-                                                               cores = boot.cores, group = group)), "GRangesList")))
+                                                               cores = boot.cores, group = group, bootstrap.means = bmeans)), "GRangesList")))
     }, mc.cores = cores)
   }
   
@@ -140,7 +150,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                                                                chr = c, targets = targets, genome = genome,
                                                                bootstrap = bootstrap, prior.means = prior.means,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
-                                                               cores = boot.cores, group = group)), "GRangesList")))
+                                                               cores = boot.cores, group = group, bootstrap.means = bmeans)), "GRangesList")))
     })
   }
   
@@ -149,7 +159,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       atacCompartments(obj, obj, res = res,
                         chr = c, targets = targets, genome = genome,
                         bootstrap = bootstrap,num.bootstraps = num.bootstraps, prior.means = prior.means,
-                        parallel = boot.parallel, cores = boot.cores, group = group)}, mc.cores = cores),
+                        parallel = boot.parallel, cores = boot.cores, group = group, bootstrap.means = bmeans)}, mc.cores = cores),
       "GRangesList")))
   }
   
@@ -158,7 +168,7 @@ getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
       atacCompartments(obj, obj, res = res,
                         chr = c, targets = targets, genome = genome, prior.means = prior.means,
                         bootstrap = bootstrap,num.bootstraps = num.bootstraps,
-                        parallel = boot.parallel, cores = boot.cores, group = group)}),
+                        parallel = boot.parallel, cores = boot.cores, group = group, bootstrap.means = bmeans)}),
       "GRangesList")))
   }
   

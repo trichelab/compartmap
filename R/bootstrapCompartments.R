@@ -15,6 +15,7 @@
 #' @param q What sort of confidence intervals are we computing (e.g. 0.95 for 95 percentCI)
 #' @param svd The original compartment calls as a GRanges object
 #' @param group Whether this is for group-level inference
+#' @param bootstrap.means Pre-computed bootstrap means matrix
 #'
 #' @return Compartment estimates with summarized bootstraps and confidence intervals
 #' @import parallel
@@ -28,7 +29,7 @@ bootstrapCompartments <- function(obj, original.obj, bootstrap.samples = 1000,
                                   chr = "chr14", assay = c("array", "atac", "bisulfite"),
                                   parallel = TRUE, cores = 2, targets = NULL, res = 1e6,
                                   genome = c("hg19", "hg38", "mm9", "mm10"), q = 0.95,
-                                  svd = NULL, group = FALSE) {
+                                  svd = NULL, group = FALSE, bootstrap.means = NULL) {
   #function for nonparametric bootstrap of compartments and compute 95% CIs
   #check input
   #match the assay args
@@ -44,27 +45,27 @@ bootstrapCompartments <- function(obj, original.obj, bootstrap.samples = 1000,
   
   #if we are using targeted means
   if (!is.null(targets)) original.obj <- original.obj[,targets]
-  if (ncol(original.obj) < 6) stop("We need more than 5 samples to bootstrap with for the results to be meaningful.")
+  
+  #get the global means we are going to use
+  #this could theoretically break if you ask for more bootstraps here than were pre-computed...
+  #let's check for one more optimization
+  if (bootstrap.samples == ncol(bootstrap.means)) {
+    bmeans <- bootstrap.means
+  } else {
+    bmeans <- sample.int(bootstrap.means, size = bootstrap.samples, replace = FALSE)
+    colnames(bmeans) <- rep("globalMean", ncol(bmeans))
+    }
+  
+  #if (ncol(original.obj) < 6) stop("We need more than 5 samples to bootstrap with for the results to be meaningful.")
   if (!parallel) {
     message("Not bootstrapping in parallel will take a long time...")
     #bootstrap and recompute compartments
-    resamp.compartments <- lapply(1:bootstrap.samples, function(b) {
+    resamp.compartments <- lapply(bmeans, function(b) {
       #resample the global means with replacement
       message("Working on bootstrap ", b)
-      resamp.mat <- switch(assay,
-                           array = .resampleMatrix(assays(original.obj)$Beta),
-                           atac = .resampleMatrix(assays(original.obj)$counts),
-                           bisulfite = .resampleMatrix(assays(original.obj)$counts))
-      #turn back into SummarizedExperiment
-      resamp.se <- switch(assay,
-                          array = SummarizedExperiment(assays=SimpleList(Beta=resamp.mat),
-                                                       rowRanges = rowRanges(original.obj)),
-                          atac = SummarizedExperiment(assays=SimpleList(counts=resamp.mat),
-                                                      rowRanges = rowRanges(original.obj)),
-                          bisulfite = SummarizedExperiment(assays=SimpleList(counts=resamp.map),
-                                                           rowRanges = rowRanges(original.obj)))
+      
       #get the shrunken bins with new global mean
-      s.bins <- shrinkBins(obj, original.obj, prior.means = getGlobalMeans(resamp.se, targets = targets, assay = assay),
+      s.bins <- shrinkBins(obj, original.obj, prior.means = b,
                            chr = chr, res = res, assay = assay, genome = genome)
       if (group) cor.bins <- getCorMatrix(s.bins, squeeze = FALSE)
       if (isFALSE(group)) cor.bins <- getCorMatrix(s.bins, squeeze = TRUE)
@@ -79,17 +80,9 @@ bootstrapCompartments <- function(obj, original.obj, bootstrap.samples = 1000,
   } else {
     message("Bootstrapping in parallel with ", cores, " cores.")
     #bootstrap and recompute compartments
-    resamp.compartments <- mclapply(1:bootstrap.samples, function(b) {
-      #resample the global means with replacement
-      resamp.mat <- switch(assay,
-                           array = .resampleMatrix(assays(original.obj)$Beta),
-                           atac = .resampleMatrix(assays(original.obj)$counts),
-                           bisulfite = .resampleMatrix(assays(original.obj)$counts))
-      #turn back into SummarizedExperiment
-      resamp.se <- SummarizedExperiment(assays=SimpleList(Beta=resamp.mat),
-                                        rowRanges = rowRanges(original.obj))
+    resamp.compartments <- mclapply(bmeans, function(b) {
       #get the shrunken bins with new global mean
-      s.bins <- shrinkBins(obj, original.obj, prior.means = getGlobalMeans(resamp.se, targets = targets, assay = assay),
+      s.bins <- shrinkBins(obj, original.obj, prior.means = b,
                            chr = chr, res = res, assay = assay, genome = genome)
       cor.bins <- getCorMatrix(s.bins, squeeze = TRUE)
       #Stupid check for perfect correlation with global mean

@@ -17,7 +17,8 @@ bootstrapCompartments(
   genome = c("hg19", "hg38", "mm9", "mm10"),
   q = 0.95,
   svd = NULL,
-  group = FALSE
+  group = FALSE,
+  bootstrap.means = NULL
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ bootstrapCompartments(
 \item{svd}{The original compartment calls as a GRanges object}
 
 \item{group}{Whether this is for group-level inference}
+
+\item{bootstrap.means}{Pre-computed bootstrap means matrix}
 }
 \value{
 Compartment estimates with summarized bootstraps and confidence intervals
