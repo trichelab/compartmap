@@ -246,7 +246,11 @@ getSeqLengths <- function(genome = c("hg19", "hg38", "mm9", "mm10"),
   #check if the genome used exists in what is currently supported, stopping if not
   if (!genome %in% c("hg19", "hg38", "mm9", "mm10")) stop("Only human and mouse are supported for the time being.")
   #import
-  genome.gr <- data(paste0(genome, "_gr"), package="compartmap")
+  genome.gr <- switch(genome,
+                      hg19 = data("hg19_gr", package = "compartmap"),
+                      hg38 = data("hg38_gr", package = "compartmap"),
+                      mm9 = data("mm9_gr", package = "compartmap"),
+                      mm10 = data("mm10_gr", package = "compartmap"))
   #make sure that the chromosome specified exists in the seqlevels
   if (!chr %in% seqlevels(get(genome.gr))) stop("Desired chromosome is not found in the seqlevels of ", genome)
   #get the seqlengths
