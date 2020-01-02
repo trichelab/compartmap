@@ -21,10 +21,6 @@
 #' @import SummarizedExperiment
 #' @import parallel
 #' @import RaggedExperiment
-#' @import Homo.sapiens
-#' @import Mus.musculus
-#' @import BSgenome.Hsapiens.UCSC.hg38
-#' @import BSgenome.Mmusculus.UCSC.mm9
 #' @export
 #' @examples
 #' data("groupATAC_raw_filtered_chr14", package = "compartmap")
