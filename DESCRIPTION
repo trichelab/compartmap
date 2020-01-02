@@ -2,7 +2,7 @@ Package: compartmap
 Type: Package
 Title: A/B compartment inference from ATAC-seq and methylation array data
 Description: Compartmap performs shrunken A/B compartment inference from ATAC-seq, BS-seq, and methylation arrays.
-Version: 1.65.75
+Version: 1.65.76
 Date: 2019-12-09
 Authors@R: c(person("Benjamin", "Johnson", role = c("aut", "cre"),
                     email = "ben.johnson@vai.org",),
@@ -18,9 +18,7 @@ Depends: R (>= 3.6.0),
          SummarizedExperiment,
 	 RaggedExperiment,
          Homo.sapiens,
-	 BSgenome.Hsapiens.UCSC.hg38,
 	 Mus.musculus,
-	 BSgenome.Mmusculus.UCSC.mm9,
 	 BiocSingular,
 	 bsseq
 Imports: GenomicRanges,

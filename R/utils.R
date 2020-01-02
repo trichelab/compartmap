@@ -59,34 +59,6 @@ getOpenSeas <- function(gr) {
   return(openSeas)
 }
 
-#' Retrieve probes, regions, etc. that fall within PMDs defined by Zhou et. al 2018
-#' https://www.nature.com/articles/s41588-018-0073-4
-#' 
-#' @name getPMD
-#'
-#' @param obj Input SummarizedExperiment object
-#' @param genome Which genome annotations to use
-#'
-#' @return A subsetted SummarizedExperiment containing loci within PMDs
-#' @import SummarizedExperiment
-#' @export
-#'
-#' @examples
-#' data("meth_array_450k_chr14", package = "compartmap")
-#' pmd_loci <- getPMD(array.data.chr14, genome = "hg19")
-#' 
-
-getPMD <- function(obj, genome = c("hg19", "hg38")) {
-  #make sure input is sane
-  if (!checkAssayType(obj)) stop("Input needs to be a SummarizedExperiment.")
-  #return PMDs derived from Zhou et al. 2018 Nature Genetics
-  genome <- match.arg(genome)
-  pmd.genome <- switch(genome,
-                       hg19=data("PMDs.hg19", package = "compartmap"),
-                       hg38=data("PMDs.hg38", package = "compartmap"))
-  return(subsetByOverlaps(obj, pmd.genome))
-}
-
 #' Get the open and closed compartment calls based on sign of singular values
 #'
 #' @param gr Input GRanges with associated mcols that represent singular values
@@ -251,3 +223,35 @@ removeEmptyBoots <- function(obj) {
   obj <- obj[na.filt]
   return(obj)
 }
+
+#' Get the seqlengths of a chromosome
+#' 
+#' The goal for this function is to eliminate the need to lug around
+#' large packages when we only want seqlengths for things.
+#'
+#' @param genome The desired genome to use ("hg19", "hg38", "mm9", "mm10")
+#' @param chr What chromosome to extract the seqlengths of
+#'
+#' @return The seqlengths of a specific chromosome
+#' @import GenomicRanges
+#' @export
+#'
+#' @examples
+#' hg19.chr14.seqlengths <- getSeqLengths(genome = "hg19", chr = "chr14")
+
+getSeqLengths <- function(genome = c("hg19", "hg38", "mm9", "mm10"),
+                          chr = "chr14") {
+  #eventually we should support arbitrary genomes
+  genome <- match.arg(genome)
+  #check if the genome used exists in what is currently supported, stopping if not
+  if (!genome %in% c("hg19", "hg38", "mm9", "mm10")) stop("Only human and mouse are supported for the time being.")
+  #import
+  genome.gr <- data(paste0(genome, "_gr"), package="compartmap")
+  #make sure that the chromosome specified exists in the seqlevels
+  if (!chr %in% seqlevels(get(genome.gr))) stop("Desired chromosome is not found in the seqlevels of ", genome)
+  #get the seqlengths
+  sl <- seqlengths(get(genome.gr))[chr]
+  return(sl)
+}
+  
+  
