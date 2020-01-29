@@ -85,8 +85,8 @@ plotAB <- function(x, chr = NULL, what = c("score", "flip.score"), main="",ylim=
     if (is(x, "GRanges")) {
       if (!is.null(chr)) x <- keepSeqlevels(x, chr, pruning.mode = "coarse")
       if (("conf.est" %in% names(mcols(x)))) {
-        if (filter) x <- x[abs(x$what) > filter.min.eigen,]
-        x.mat <- x$what
+        if (filter) x <- x[abs(as(mcols(x)[what], "matrix")) > filter.min.eigen,]
+        x.mat <- as(mcols(x)[what], "matrix")
         if (unitarize) x.mat <- .unitarize(x.mat)
         x.mat <- as.numeric(x.mat)
         if (reverse) x.mat <- -x.mat
