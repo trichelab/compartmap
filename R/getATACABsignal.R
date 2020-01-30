@@ -26,12 +26,12 @@
 #' data("groupATAC_raw_filtered_chr14", package = "compartmap")
 #' atac_compartments <- getATACABsignal(filtered.data.chr14, parallel=F, chr="chr14", bootstrap=F, genome="hg19")
 
-getATACABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
+getATACABsignal <- function(obj, res = 1e6, parallel = FALSE, chr = NULL,
                              targets = NULL, cores = 2,
-                             bootstrap = TRUE, num.bootstraps = 1000,
+                             bootstrap = TRUE, num.bootstraps = 100,
                              genome = c("hg19", "hg38", "mm9", "mm10"),
                              other = NULL, group = FALSE,
-                             boot.parallel = TRUE, boot.cores = 2) {
+                             boot.parallel = FALSE, boot.cores = 2) {
   
   #gather the chromosomes we are working on
   if (is.null(chr)) {
