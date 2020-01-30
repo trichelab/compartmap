@@ -50,7 +50,7 @@ summarizeBootstraps <- function(boot.list, est.ab, q = 0.95,
     #overlap by common intervals
     ol <- findOverlaps(b, est.ab.dummy)
     mcols(est.ab.dummy)$boot.open[subjectHits(ol)] <- mcols(est.ab.dummy)$boot.open[subjectHits(ol)] + mcols(b)$open[queryHits(ol)]
-    mcols(est.ab.dummy)$boot.closed[subjectHits(ol)] <- mcols(est.ab)$boot.closed[subjectHits(ol)] + mcols(b)$closed[queryHits(ol)]
+    mcols(est.ab.dummy)$boot.closed[subjectHits(ol)] <- mcols(est.ab.dummy)$boot.closed[subjectHits(ol)] + mcols(b)$closed[queryHits(ol)]
     #return the dummy mcols for bootstrapped open and closed calls
     return(as.matrix(cbind(mcols(est.ab.dummy)$boot.open,
                            mcols(est.ab.dummy$boot.closed))))
