@@ -31,6 +31,8 @@ summarizeBootstraps <- function(boot.list, est.ab, q = 0.95,
     b$score <- b$pc
     #generate a dummy GRanges object
     est.ab.dummy <- est.ab
+    est.ab.dummy$boot.open <- 0
+    est.ab.dummy$boot.closed <- 0
     #convert to binary result for proportions
     #logic for methylation
     #open = eigen < 0
