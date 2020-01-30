@@ -53,7 +53,7 @@ summarizeBootstraps <- function(boot.list, est.ab, q = 0.95,
     mcols(est.ab.dummy)$boot.closed[subjectHits(ol)] <- mcols(est.ab.dummy)$boot.closed[subjectHits(ol)] + mcols(b)$closed[queryHits(ol)]
     #return the dummy mcols for bootstrapped open and closed calls
     return(as.matrix(cbind(mcols(est.ab.dummy)$boot.open,
-                           mcols(est.ab.dummy$boot.closed))))
+                           mcols(est.ab.dummy)$boot.closed)))
   })
   
   #eunumerate bootstraps
