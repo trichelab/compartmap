@@ -12,24 +12,26 @@
 #' @param chr.end    End position (in bp) to be analyzed
 #' @param res    Binning resolution (in bp)
 #' @param FUN    Function to be used to summarize information within a bin
-#' @param genome    Genome corresponding to the input data ("hg19" or "mm10")
+#' @param genome    Genome corresponding to the input data ("hg19", "hg38", "mm9", "mm10")
 #' 
 #' @return    A list object to pass to getCorMatrix
 #' 
-#' @import    GenomicRanges
+#' @import    SummarizedExperiment
 #' @import    Homo.sapiens
+#' @import    Mus.musculus
+#' @import    BSgenome.Hsapiens.UCSC.hg38
+#' @import    BSgenome.Mmusculus.UCSC.mm9
 #' 
 #' @export 
 #' 
 #' @examples 
 #' 
 #' library(GenomicRanges)
-#' library(Homo.sapiens)
 #' 
 #' #Generate random genomic intervals of 1-1000 bp on chr1-22
 #' #Modified from https://www.biostars.org/p/225520/
 #' random_genomic_int <- data.frame(chr = rep("chr14", 100))
-#' random_genomic_int$start <- apply(random_genomic_int, 1, function(x) { round(runif(1, 0, seqlengths(Homo.sapiens)[x][[1]]), 0) })
+#' random_genomic_int$start <- apply(random_genomic_int, 1, function(x) { round(runif(1, 0, getSeqLengths(chr = x)[[1]]), 0) })
 #' random_genomic_int$end <- random_genomic_int$start + runif(1, 1, 1000)
 #' random_genomic_int$strand <- "*"
 #' 
@@ -43,7 +45,9 @@
 #' #Bin counts
 #' bin.counts <- getBinMatrix(count.mat, makeGRangesFromDataFrame(random_genomic_int), chr = "chr14", genome = "hg19")
 
-getBinMatrix <- function(x, genloc, chr = "chr1", chr.start = 0, chr.end = NULL, res = 100000, FUN=sum, genome = "hg19"){
+getBinMatrix <- function(x, genloc, chr = "chr1", chr.start = 0,
+                         chr.end = NULL, res = 100000, FUN=sum,
+                         genome = c("hg19", "hg38", "mm9", "mm10")) {
   
   if (any(is.na(x))){
     stop("Matrix must not contain NAs")
@@ -52,13 +56,16 @@ getBinMatrix <- function(x, genloc, chr = "chr1", chr.start = 0, chr.end = NULL,
     stop("Provided GRanges must have length equal to the matrix number of rows")
   }
   
+  #which genome do we have
+  genome <- match.arg(genome)
+  
   if (is.null(chr.end)) {
-    if (genome == "hg19") {
-      #genome <- match.arg(genome)
-      #chr.end <- switch(genome,
-      #                  hg19 = seqlengths(Homo.sapiens)[chr],
-      #                  mm10 = seqlengths(Mus.musculus)[chr])
-      chr.end <- seqlengths(Homo.sapiens)[chr]
+    if (genome %in% c("hg19", "hg38", "mm9", "mm10")) {
+      chr.end <- switch(genome,
+                        hg19 = getSeqLengths(genome = "hg19", chr = chr),
+                        hg38 = getSeqLengths(genome = "hg38", chr = chr),
+                        mm9 = getSeqLengths(genome = "mm9", chr = chr),
+                        mm10 = getSeqLengths(genome = "mm10", chr = chr))
     }
     else {
       message("Don't know what to do with ", genome)
@@ -80,17 +87,8 @@ getBinMatrix <- function(x, genloc, chr = "chr1", chr.start = 0, chr.end = NULL,
   message(n, " bins created...")
   
   #User defined function to summarize data in the bins
-  #TODO: allow for bin matrices to be generated for all chrs
   x.bin <- apply(x, 2, function(x) {
     zvec <- rep(0, n) #Generate a vector of zeroes
-    # jse.shrunken <- tapply(x, INDEX = ids, function(loci) {
-    #   C <- sd(log(loci + 0.0001))
-    #   prior.m <- mean(log(loci + 0.0001))
-    #   return(round(exp(prior.m + C*(log(loci + 0.0001) - prior.m))))
-    # })
-    # jse.shrunken <- unlist(jse.shrunken)
-    # names(jse.shrunken) <- gsub(".*\\.", "", names(jse.shrunken))
-    # a <- tapply(jse.shrunken, INDEX=ids, FUN=FUN) #Summarize data
     a <- tapply(x, INDEX=ids, FUN=FUN) #Summarize data
     zvec[as.numeric(names(a))] <- a
     zvec

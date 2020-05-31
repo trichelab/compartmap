@@ -19,7 +19,7 @@
 #' #Generate random genomic intervals of 1-1000 bp on chr1-22
 #' #Modified from https://www.biostars.org/p/225520/
 #' random_genomic_int <- data.frame(chr = rep("chr14", 100))
-#' random_genomic_int$start <- apply(random_genomic_int, 1, function(x) { round(runif(1, 0, seqlengths(Homo.sapiens)[x][[1]]), 0) })
+#' random_genomic_int$start <- apply(random_genomic_int, 1, function(x) { round(runif(1, 0, getSeqLengths(chr = x)[[1]]), 0) })
 #' random_genomic_int$end <- random_genomic_int$start + runif(1, 1, 1000)
 #' random_genomic_int$strand <- "*"
 #' 
@@ -39,10 +39,12 @@
 getCorMatrix <- function(binmat, squeeze = FALSE) {
   #Calculate correlations
   message("Calculating correlations...")
+  #bind back up the global means and shrunken bins
+  binmat$x <- cbind(binmat$x, binmat$gmeans)
   binmat.cor <- suppressWarnings(cor(t(binmat$x)))
   gr.cor  <- binmat$gr
   if (squeeze) {
-    fisherZ(binmat.cor)
+    binmat.cor <- fisherZ(binmat.cor)
     }
   message("Done...")
   return(list(gr.cor=gr.cor, binmat.cor=binmat.cor))

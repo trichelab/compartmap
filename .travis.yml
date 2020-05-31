@@ -15,16 +15,26 @@ r_github_packages:
 
 r_packages:
   - gtools
-  - mixOmics
   - parallel
   - roxygen2
   - testthat
   - knitr
+  - grid
+  - pbapply
+  - viridis
+  - ggplot2
+  - impute
+  - devtools
 
 bioc_packages:
-  - minfi
+  - BiocSingular
   - Homo.sapiens
   - GenomicRanges
   - GenomicAlignments
   - SummarizedExperiment
   - BiocStyle
+  - BSgenome.Hsapiens.UCSC.hg38
+  - BSgenome.Mmusculus.UCSC.mm9
+  - bsseq
+  - RaggedExperiment
+  - DelayedMatrixStats
