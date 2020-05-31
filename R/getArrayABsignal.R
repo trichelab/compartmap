@@ -176,10 +176,14 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
 #'
 #' @return A preprocessed SummarizedExperiment to compute compartments
 #' @import SummarizedExperiment
-#' @export
 #'
 #' @examples
-#' 
+#' if (require(minfiData)) {
+#'   grSet <- mapToGenome(ratioConvert(preprocessNoob(RGsetEx.sub)))
+#'   preprocessArrays(grSet)
+#' } 
+#'
+#' @export
 preprocessArrays <- function(obj,
                              genome = c("hg19", "hg38", "mm9", "mm10"),
                              other = NULL, array.type = c("hm450", "EPIC")) {
@@ -201,8 +205,10 @@ preprocessArrays <- function(obj,
   assays(obj.opensea)$Beta <- flogit(assays(obj.opensea)$Beta)
   
   #impute missing values and drop samples that are too sparse
-  message("Imputing missing values.")
-  obj.opensea.imputed <- imputeKNN(obj.opensea, assay = "array")
+  if (any(is.na(getBeta(obj.opensea)))) {
+    message("Imputing missing values.")
+    obj.opensea <- imputeKNN(obj.opensea, assay = "array")
+  }
   
-  return(obj.opensea.imputed)
+  return(obj.opensea)
 }
