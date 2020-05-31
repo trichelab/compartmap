@@ -27,11 +27,13 @@
 #' @import Mus.musculus
 #' @import BSgenome.Hsapiens.UCSC.hg38
 #' @import BSgenome.Mmusculus.UCSC.mm9
-#' @export
+#'
 #' @examples
+#'
 #' data("meth_array_450k_chr14", package = "compartmap")
-#' array_compartments <- getArrayABsignal(array.data.chr14, parallel=F, chr="chr14", bootstrap=F, genome="hg19", array.type="hm450")
-
+#' array_compartments <- getArrayABsignal(array.data.chr14, parallel=FALSE, chr="chr14", bootstrap=FALSE, genome="hg19", array.type="hm450")
+#'
+#' @export
 getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                              targets = NULL, preprocess = TRUE, cores = 2,
                              bootstrap = TRUE, num.bootstraps = 1000,
