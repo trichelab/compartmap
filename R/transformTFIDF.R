@@ -6,8 +6,8 @@
 #' @param scale.factor Scaling factor for the term-frequency (TF)
 #'
 #' @return A TF-IDF transformed matrix of the same dimensions as the input
+#'
 #' @import Matrix
-#' @export
 #'
 #' @examples
 #' 
@@ -17,10 +17,13 @@
 #' #Input needs to be a tall matrix
 #' tfidf <- transformTFIDF(mat)
 #' 
-
+#' @export
 transformTFIDF <- function(obj, scale.factor = 1e5) {
   #this filters using TF-IDF on a *matrix* object
   if (!is(obj, "matrix")) stop("Input needs to be a matrix.")
+  #
+  # FIXME: cite the following in the docs
+  #
   #the following code was modeled after or taken from:
   #http://andrewjohnhill.com/images/posts/2019-5-6-dimensionality-reduction-for-scatac-data/analysis.html
   #https://divingintogeneticsandgenomics.rbind.io/post/clustering-scatacseq-data-the-tf-idf-way/
@@ -79,7 +82,6 @@ transformTFIDF <- function(obj, scale.factor = 1e5) {
 #' @import DelayedMatrixStats
 #' @import DelayedArray
 #' @import HDF5Array
-#' @export
 #'
 #' @examples
 #' 
@@ -89,7 +91,7 @@ transformTFIDF <- function(obj, scale.factor = 1e5) {
 #' #Input needs to be a tall matrix
 #' tfidf <- hdf5TFIDF(mat)
 #' 
-
+#' @export
 hdf5TFIDF <- function(h5, scale.factor = 1e5,
                       return.dense = FALSE,
                       return.se = FALSE) {

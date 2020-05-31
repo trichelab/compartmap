@@ -10,7 +10,7 @@ getBinMatrix(
   chr = "chr1",
   chr.start = 0,
   chr.end = NULL,
-  res = 1e+05,
+  res = 100000,
   FUN = sum,
   genome = c("hg19", "hg38", "mm9", "mm10")
 )

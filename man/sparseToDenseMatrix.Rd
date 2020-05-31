@@ -9,7 +9,7 @@ sparseToDenseMatrix(
   blockwise = TRUE,
   by.row = TRUE,
   by.col = FALSE,
-  chunk.size = 1e+05,
+  chunk.size = 100000,
   parallel = FALSE,
   cores = 2
 )
@@ -51,4 +51,5 @@ dim(mat) == dim(mat.dense)
 
 #make sure they are the same numerically
 all(mat == mat.dense)
+
 }

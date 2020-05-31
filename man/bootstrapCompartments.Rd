@@ -13,7 +13,7 @@ bootstrapCompartments(
   parallel = TRUE,
   cores = 2,
   targets = NULL,
-  res = 1e+06,
+  res = 1000000,
   genome = c("hg19", "hg38", "mm9", "mm10"),
   q = 0.95,
   svd = NULL,

@@ -214,7 +214,6 @@ getChrs <- function(obj) {
 #'
 #' @return A filtered list object
 #' @export
-
 removeEmptyBoots <- function(obj) {
   #remove NAs from a bootstrap list
   #this can happen if the correlation between the bins and eigenvector fails
@@ -234,11 +233,11 @@ removeEmptyBoots <- function(obj) {
 #'
 #' @return The seqlengths of a specific chromosome
 #' @import GenomicRanges
-#' @export
 #'
 #' @examples
 #' hg19.chr14.seqlengths <- getSeqLengths(genome = "hg19", chr = "chr14")
-
+#'
+#' @export
 getSeqLengths <- function(genome = c("hg19", "hg38", "mm9", "mm10"),
                           chr = "chr14") {
   #eventually we should support arbitrary genomes
@@ -268,7 +267,6 @@ getSeqLengths <- function(genome = c("hg19", "hg38", "mm9", "mm10"),
 #' @param by.col Whether to chunk in a column-wise fashion
 #'
 #' @return A set of chunked indices
-#' @export
 #'
 #' @examples
 #' #make a sparse binary matrix
@@ -280,7 +278,8 @@ getSeqLengths <- function(genome = c("hg19", "hg38", "mm9", "mm10"),
 #' 
 #' #get row-wise chunks of 10
 #' chunks <- getMatrixBlocks(mat.sparse, chunk.size = 10)
-
+#'
+#' @export
 getMatrixBlocks <- function(mat, chunk.size = 1e5,
                             by.row = TRUE, by.col = FALSE) {
   message("Using chunk size: ", chunk.size)
@@ -311,7 +310,6 @@ getMatrixBlocks <- function(mat, chunk.size = 1e5,
 #' @import Matrix
 #' @import parallel
 #' 
-#' @export 
 #' 
 #' @examples
 #' #make a sparse binary matrix
@@ -329,7 +327,8 @@ getMatrixBlocks <- function(mat, chunk.size = 1e5,
 #' 
 #' #make sure they are the same numerically
 #' all(mat == mat.dense)
-
+#'
+#' @export 
 sparseToDenseMatrix <- function(mat, blockwise = TRUE,
                                 by.row = TRUE, by.col = FALSE,
                                 chunk.size = 1e5, parallel = FALSE,
