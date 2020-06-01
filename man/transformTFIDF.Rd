@@ -4,7 +4,7 @@
 \alias{transformTFIDF}
 \title{Transform/normalize compartment calls using TF-IDF}
 \usage{
-transformTFIDF(obj, scale.factor = 1e+05)
+transformTFIDF(obj, scale.factor = 100000)
 }
 \arguments{
 \item{obj}{n x p input matrix (n = samples/cells; p = compartments)}

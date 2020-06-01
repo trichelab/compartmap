@@ -20,4 +20,5 @@ large packages when we only want seqlengths for things.
 }
 \examples{
 hg19.chr14.seqlengths <- getSeqLengths(genome = "hg19", chr = "chr14")
+
 }
