@@ -7,8 +7,8 @@
 precomputeBootstrapMeans(
   obj,
   targets = NULL,
-  num.bootstraps = 1000,
-  assay = c("array", "atac", "bisulfite"),
+  num.bootstraps = 100,
+  assay = c("array", "atac", "bisulfite", "rna"),
   parallel = FALSE,
   num.cores = 1
 )

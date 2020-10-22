@@ -6,7 +6,7 @@
 \usage{
 getArrayABsignal(
   obj,
-  res = 1000000,
+  res = 1e+06,
   parallel = TRUE,
   chr = NULL,
   targets = NULL,

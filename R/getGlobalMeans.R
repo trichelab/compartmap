@@ -16,13 +16,13 @@
 #'
 
 getGlobalMeans <- function(obj, targets = NULL,
-                           assay = c("array", "atac", "bisulfite")) {
+                           assay = c("array", "atac", "bisulfite", "rna")) {
   #match the assay arg
   assay <- match.arg(assay)
 
   #check the names of the assays
   if (!any(getAssayNames(obj) %in% c("Beta", "counts"))) {
-    stop("The assay slot should contain either 'Beta' for arrays or 'counts' for atac/bisulfite.")
+    stop("The assay slot should contain either 'Beta' for arrays or 'counts' for atac/bisulfite/rna.")
   }
   
   #get the global means
@@ -33,13 +33,15 @@ getGlobalMeans <- function(obj, targets = NULL,
     globalMean <- switch(assay,
                          array = matrix(rowMeans(flogit(assays(stargets)$Beta), na.rm=TRUE), ncol=1),
                          atac = matrix(rowMeans(assays(stargets)$counts, na.rm=TRUE), ncol=1),
-                         bisulfite = matrix(rowMeans(assays(stargets)$counts, na.rm=TRUE), ncol=1))
+                         bisulfite = matrix(rowMeans(assays(stargets)$counts, na.rm=TRUE), ncol=1),
+                         rna = matrix(rowMeans(assays(stargets)$counts, na.rm=TRUE), ncol=1))
   }
   else {
     globalMean <- switch(assay,
                          array = matrix(rowMeans(flogit(assays(obj)$Beta), na.rm=TRUE), ncol=1),
                          atac = matrix(rowMeans(assays(obj)$counts, na.rm=TRUE), ncol=1),
-                         bisulfite = matrix(rowMeans(assays(obj)$counts, na.rm=TRUE), ncol=1))
+                         bisulfite = matrix(rowMeans(assays(obj)$counts, na.rm=TRUE), ncol=1),
+                         rna = matrix(rowMeans(assays(obj)$counts, na.rm=TRUE), ncol=1))
   }
   colnames(globalMean) <- "globalMean"
   #coercion to get the rownames to be the GRanges coordinates
@@ -50,6 +52,8 @@ getGlobalMeans <- function(obj, targets = NULL,
 }
 
 #' Pre-compute the global means for bootstrapping compartments
+#' 
+#' @name precomputeBootstrapMeans
 #'
 #' @param obj Input SummarizedExperiment object
 #' @param targets Optional targets to shrink towards
@@ -68,12 +72,11 @@ getGlobalMeans <- function(obj, targets = NULL,
 #' array.bootstrap.global.means <- precomputeBootstrapMeans(array.data.chr14, assay = "array", num.bootstraps = 2)
 #' 
 
-precomputeBootstrapMeans <- function(obj, targets = NULL, num.bootstraps = 1000,
-                                     assay = c("array", "atac", "bisulfite"),
+precomputeBootstrapMeans <- function(obj, targets = NULL, num.bootstraps = 100,
+                                     assay = c("array", "atac", "bisulfite", "rna"),
                                      parallel = FALSE, num.cores = 1) {
   #this function precomputes the bootstrapped global means
-  #as a default we will make 1000 bootstraps
-  message("WARNING: THIS IS NOT YET IMPLEMENTED FULLY!")
+  #as a default we will make 100 bootstraps
   if (parallel) {
     bootMean <- mclapply(1:num.bootstraps, function(b) {
       message("Working on bootstrap ", b)
@@ -84,7 +87,8 @@ precomputeBootstrapMeans <- function(obj, targets = NULL, num.bootstraps = 1000,
       resamp.mat <- switch(assay,
                            array = .resampleMatrix(assays(obj)$Beta),
                            atac = .resampleMatrix(assays(obj)$counts),
-                           bisulfite = .resampleMatrix(assays(obj)$counts))
+                           bisulfite = .resampleMatrix(assays(obj)$counts),
+                           rna = .resampleMatrix(assays(obj)$counts))
       #turn back into SummarizedExperiment
       resamp.se <- switch(assay,
                           array = SummarizedExperiment(assays=SimpleList(Beta=resamp.mat),
@@ -92,6 +96,8 @@ precomputeBootstrapMeans <- function(obj, targets = NULL, num.bootstraps = 1000,
                           atac = SummarizedExperiment(assays=SimpleList(counts=resamp.mat),
                                                       rowRanges = rowRanges(obj)),
                           bisulfite = SummarizedExperiment(assays=SimpleList(counts=resamp.mat),
+                                                           rowRanges = rowRanges(obj)),
+                          rna = SummarizedExperiment(assays=SimpleList(counts=resamp.mat),
                                                            rowRanges = rowRanges(obj)))
       #make sure targets is NULL since we already subset to them!
       return(getGlobalMeans(obj = resamp.se, targets = NULL, assay = assay))
@@ -106,7 +112,8 @@ precomputeBootstrapMeans <- function(obj, targets = NULL, num.bootstraps = 1000,
       resamp.mat <- switch(assay,
                            array = .resampleMatrix(assays(obj)$Beta),
                            atac = .resampleMatrix(assays(obj)$counts),
-                           bisulfite = .resampleMatrix(assays(obj)$counts))
+                           bisulfite = .resampleMatrix(assays(obj)$counts),
+                           rna = .resampleMatrix(assays(obj)$counts))
       #turn back into SummarizedExperiment
       resamp.se <- switch(assay,
                           array = SummarizedExperiment(assays=SimpleList(Beta=resamp.mat),
@@ -114,47 +121,12 @@ precomputeBootstrapMeans <- function(obj, targets = NULL, num.bootstraps = 1000,
                           atac = SummarizedExperiment(assays=SimpleList(counts=resamp.mat),
                                                       rowRanges = rowRanges(obj)),
                           bisulfite = SummarizedExperiment(assays=SimpleList(counts=resamp.mat),
+                                                           rowRanges = rowRanges(obj)),
+                          rna = SummarizedExperiment(assays=SimpleList(counts=resamp.mat),
                                                            rowRanges = rowRanges(obj)))
       #make sure targets is NULL since we already subset to them!
       return(getGlobalMeans(obj = resamp.se, targets = NULL, assay = assay))
     })
   }
   return(do.call("cbind", bootMean))
-}
-
-#helper function for resampling
-#this is a MAJOR optimization point
-#we should be pre-computing these and sampling from them
-#done above but not yet implemented
-.getResampledGlobalMeans <- function(obj, targets = NULL,
-                                     assay = c("array", "atac", "bisulfite")) {
-  #match the assay arg
-  assay <- match.arg(assay)
-  
-  #check the names of the assays
-  if (!any(getAssayNames(obj) %in% c("Beta", "counts"))) {
-    stop("The assay slot should contain either 'Beta' for arrays or 'counts' for atac/bisulfite.")
-  }
-  
-  #get the global means
-  #check if shrinkage targets are being used
-  if (!is.null(targets)){
-    stargets <- getShrinkageTargets(obj, targets)
-    if (ncol(stargets) < 5) {
-      message("Not enough samples to bootstrap using the shrinkage targets.")
-      stop("Need at least 5 samples for this to be useful.")
-      }
-    globalMean <- switch(assay,
-                         array = matrix(rowMeans(flogit(assays(stargets)$Beta), na.rm=TRUE), ncol=1),
-                         atac = matrix(rowMeans(assays(stargets)$counts, na.rm=TRUE), ncol=1),
-                         bisulfite = matrix(rowMeans(assays(stargets)$counts, na.rm=TRUE), ncol=1))
-  }
-  else {
-    globalMean <- switch(assay,
-                         array = matrix(rowMeans(flogit(assays(obj)$Beta), na.rm=TRUE), ncol=1),
-                         atac = matrix(rowMeans(assays(obj)$counts, na.rm=TRUE), ncol=1),
-                         bisulfite = matrix(rowMeans(assays(obj)$counts, na.rm=TRUE), ncol=1))
-  }
-  colnames(globalMean) <- "globalMean"
-  return(globalMean) 
 }
