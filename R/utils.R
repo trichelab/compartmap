@@ -184,7 +184,7 @@ flogit <- function(p, sqz=0.000001) {
 
   midpt <- 0.5
   deflate <- 1 - (sqz * midpt)
-  if (any(p > 1 | p < 0)) stop("Values of p outside (0,1) detected.")
+  if (any(p > 1 | p < 0, na.rm = TRUE)) stop("Values of p outside (0,1) detected.")
   squoze <- ((p - midpt) * deflate) + midpt
   return( log( squoze / (1 - squoze)) )
   
