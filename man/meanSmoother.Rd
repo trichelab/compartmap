@@ -4,16 +4,18 @@
 \alias{meanSmoother}
 \title{Windowed mean smoother}
 \usage{
-meanSmoother(x, k = 1, iter = 2, na.rm = TRUE)
+meanSmoother(x, k = 1, iter = 2, na.rm = TRUE, delta = NULL)
 }
 \arguments{
 \item{x}{Input data matrix where samples are columns and regions/loci are rows}
 
 \item{k}{The number of windows to use (k=1 is 3 windows and k=2 is 5 windows)}
 
-\item{iter}{The number of iterations to smooth}
+\item{iter}{The number of iterations to smooth (default is 2)}
 
 \item{na.rm}{Whether to remove NAs prior to smoothing}
+
+\item{delta}{Per-iteration epsilon to accept as convergence (overrides iter)}
 }
 \value{
 Smoothed data matrix
@@ -24,5 +26,7 @@ Windowed mean smoother
 \examples{
 dummy <- matrix(rnorm(10000), ncol=25)
 smooth.dummy <- meanSmoother(dummy)
+smooth.dummy <- meanSmoother(dummy, iter=3) 
+smooth.dummy <- meanSmoother(dummy, delta=1e-3) 
 
 }
