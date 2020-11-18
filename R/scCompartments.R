@@ -1,7 +1,7 @@
-#' @title Estimate A/B compartments from ATAC-seq data
+#' @title Estimate A/B compartments from single-cell sequencing data
 #'
 #' @description 
-#' \code{getATACABsignal} returns estimated A/B compartments from ATAC-seq data.
+#' \code{scCompartments} returns estimated A/B compartments from sc-seq data.
 #'
 #' @param obj Input SummarizedExperiment object
 #' @param res Compartment resolution in bp
@@ -24,9 +24,9 @@
 #' data("groupATAC_raw_filtered_chr14", package = "compartmap")
 #' sc_compartments <- scCompartments(filtered.data.chr14, parallel=F, chr="chr14", bootstrap=F, genome="hg19")
 
-scCompartments <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
+scCompartments <- function(obj, res = 1e6, parallel = FALSE, chr = NULL,
                            targets = NULL, cores = 2,
-                           bootstrap = TRUE, num.bootstraps = 1000,
+                           bootstrap = TRUE, num.bootstraps = 100,
                            genome = c("hg19", "hg38", "mm9", "mm10"),
                            group = FALSE, assay = c("atac", "bisulfite", "rna")) {
   #this is a _complete_ rebuild of getATACABsignal()
@@ -36,7 +36,7 @@ scCompartments <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   if (!checkAssayType(obj)) stop("Input object needs to be a SummarizedExperiment.")
   
   #which assay are we working on
-  assay <- match.arg(assay)
+  assay <- tolower(match.arg(assay))
   if (!assay %in% c("atac", "bisulfite", "rna")) stop("Supported assays are 'atac', 'bisulfite', and 'rna'.")
   
   #gather the chromosomes we are working on
@@ -49,7 +49,7 @@ scCompartments <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   
   #get the column names
   if (is.null(colnames(obj))) {
-    message("colnames need to be sample names.")
+    message("colnames need to be sample/cell names.")
     stop("One workaround might be: colnames(obj) <- rownames(colData(obj))")
     }
   columns <- colnames(obj)
@@ -57,11 +57,12 @@ scCompartments <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   
   #precompute global means
   message("Pre-computing global means.")
-  prior.means <- getGlobalMeans(obj = obj, targets = targets, assay = assay)
+  prior.means <- getGlobalMeans(obj = obj,
+                                targets = targets,
+                                assay = assay)
   
   if (bootstrap) {
     message("Pre-computing the bootstrap global means.")
-    #TODO: make sure that precomputeBootstrapMeans can take rna as an assay
     bmeans <- precomputeBootstrapMeans(obj = obj, targets = targets, num.bootstraps = num.bootstraps,
                                        assay = assay, parallel = parallel, num.cores = cores)
   }

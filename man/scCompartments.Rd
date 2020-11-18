@@ -2,17 +2,17 @@
 % Please edit documentation in R/scCompartments.R
 \name{scCompartments}
 \alias{scCompartments}
-\title{Estimate A/B compartments from ATAC-seq data}
+\title{Estimate A/B compartments from single-cell sequencing data}
 \usage{
 scCompartments(
   obj,
-  res = 1000000,
-  parallel = TRUE,
+  res = 1e+06,
+  parallel = FALSE,
   chr = NULL,
   targets = NULL,
   cores = 2,
   bootstrap = TRUE,
-  num.bootstraps = 1000,
+  num.bootstraps = 100,
   genome = c("hg19", "hg38", "mm9", "mm10"),
   group = FALSE,
   assay = c("atac", "bisulfite", "rna")
@@ -45,7 +45,7 @@ scCompartments(
 A RaggedExperiment of inferred compartments
 }
 \description{
-\code{getATACABsignal} returns estimated A/B compartments from ATAC-seq data.
+\code{scCompartments} returns estimated A/B compartments from sc-seq data.
 }
 \examples{
 data("groupATAC_raw_filtered_chr14", package = "compartmap")

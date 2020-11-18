@@ -11,7 +11,8 @@
 #' @param chr The chromosome to operate on
 #' @param res Resolution to perform the binning
 #' @param targets The column/sample/cell names to shrink towards
-#' @param assay What assay type this is ("array", "atac", "bisulfite")
+#' @param jse Whether to use a James-Stein estimator instead
+#' @param assay What assay type this is ("array", "atac", "bisulfite", "rna")
 #' @param genome What genome are we working with ("hg19", "hg38", "mm9", "mm10")
 #'
 #' @return A list object to pass to getCorMatrix
@@ -30,8 +31,8 @@
 #' 
 
 shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
-                       res = 1e6, targets = NULL,
-                       assay = c("array", "atac", "bisulfite"),
+                       res = 1e6, targets = NULL, jse = FALSE,
+                       assay = c("array", "atac", "bisulfite", "rna"),
                        genome = c("hg19", "hg38", "mm9", "mm10")) {
   #match the assay args
   assay <- match.arg(assay)
@@ -53,16 +54,35 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
   }
   
   #bin the input
-  bin.mat <- suppressMessages(switch(assay,
-                                     atac = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
-                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=atac_fun,
-                                                         genome = genome),
-                                     array = getBinMatrix(x=as.matrix(cbind(flogit(assays(original.x)$Beta), prior.means)),
-                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=median,
-                                                         genome = genome),
-                                     bisulfite = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
-                                                         genloc=rowRanges(x), chr=chr, res=res, FUN=mean,
-                                                         genome = genome)))
+  if (jse) {
+    bin.mat <- suppressMessages(switch(assay,
+                                       atac = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
+                                                           genloc=rowRanges(x), chr=chr, res=res, FUN=mean,
+                                                           genome = genome),
+                                       array = getBinMatrix(x=as.matrix(cbind(flogit(assays(original.x)$Beta), prior.means)),
+                                                            genloc=rowRanges(x), chr=chr, res=res, FUN=median,
+                                                            genome = genome),
+                                       bisulfite = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
+                                                                genloc=rowRanges(x), chr=chr, res=res, FUN=mean,
+                                                                genome = genome),
+                                       rna = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
+                                                          genloc=rowRanges(x), chr=chr, res=res, FUN=mean,
+                                                          genome = genome)))
+  } else {
+    bin.mat <- suppressMessages(switch(assay,
+                                       atac = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
+                                                           genloc=rowRanges(x), chr=chr, res=res, FUN=atac_fun,
+                                                           genome = genome),
+                                       array = getBinMatrix(x=as.matrix(cbind(flogit(assays(original.x)$Beta), prior.means)),
+                                                            genloc=rowRanges(x), chr=chr, res=res, FUN=median,
+                                                            genome = genome),
+                                       bisulfite = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
+                                                                genloc=rowRanges(x), chr=chr, res=res, FUN=mean,
+                                                                genome = genome),
+                                       rna = getBinMatrix(x=as.matrix(cbind(assays(original.x)$counts, prior.means)),
+                                                          genloc=rowRanges(x), chr=chr, res=res, FUN=atac_fun,
+                                                          genome = genome)))
+  }
   
   #shrink the bins using a James-Stein Estimator
   x.shrink <- t(apply(bin.mat$x, 1, function(r) {
@@ -72,10 +92,19 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
       if (length(r.samps[targets]) == 1) {
         stop("Cannot perform targeted bin-level shrinkage with one target sample.")
       }}
-    switch(assay,
-           atac = .shrinkATAC(x=r.samps, prior=r.prior.m, targets=targets),
-           array = .shrinkArrays(x=r.samps, prior=r.prior.m, targets=targets),
-           bisulfite = .shrinkBS(x=r.samps, prior=r.prior.m, targets=targets))
+    if (jse) {
+      switch(assay,
+             atac = .jse(x=r.samps, grand.mean=r.prior.m, targets=targets),
+             array = .jse(x=r.samps, grand.mean=r.prior.m, targets=targets),
+             bisulfite = .jse(x=r.samps, grand.mean=r.prior.m, targets=targets),
+             rna = .jse(x=r.samps, grand.mean=r.prior.m, targets=targets))
+    } else {
+      switch(assay,
+             atac = .ebayes(x=r.samps, prior=r.prior.m, targets=targets),
+             array = .ebayes(x=r.samps, prior=r.prior.m, targets=targets),
+             bisulfite = .ebayes(x=r.samps, prior=r.prior.m, targets=targets),
+             rna = .ebayes(x=r.samps, prior=r.prior.m, targets=targets))
+      }
     }))
   
   #drop things that are zeroes as global means
@@ -92,8 +121,7 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
 }
 
 #helper functions for computing shrunken means
-#shrink bins in (sc)ATAC-seq data
-.shrinkATAC <- function(x, prior = NULL, targets = NULL) {
+.ebayes <- function(x, prior = NULL, targets = NULL) {
   if (!is.null(targets)) {
     C <- sd(x[targets])
   } else {
@@ -104,26 +132,22 @@ shrinkBins <- function(x, original.x, prior.means = NULL, chr = NULL,
   return(prior.m + C*(x - prior.m))
 }
 
-#shrink bins in methylation arrays
-.shrinkArrays <- function(x, prior = NULL, targets = NULL) {
+.jse <- function(x, grand.mean = NULL, targets = NULL) {
+  ## see if we have enough means...
+  ## this also assumes we are just computing a straight mean
   if (!is.null(targets)) {
-    C <- sd(x[targets])
+    if (length(targets) < 4) {
+      message("Number of means fewer than 4. Using Bayes instead.")
+      ## this falls back to using Bayes rule which will probably not be great
+      ## but it won't explode and may provide some reasonable results anyway
+      c <- sd(x[targets])
+    } else {
+      ## targeted shrinkage
+      c <- 1 - ((length(x) - 3)*(sd(x[targets])^2) / sum(x - grand.mean)^2)
+      }
   } else {
-    C <- sd(x)
+    ## typical shrinkage
+    c <- 1 - ((length(x) - 3)*(sd(x)^2) / sum((x - grand.mean)^2))
   }
-  prior.m <- prior
-  #convert back to beta values
-  return(prior.m + C*(x - prior.m))
-}
-
-#shrink bisulfite sequencing smoothed M-values
-.shrinkBS <- function(x, prior = NULL, targets = NULL) {
-  #assumes that M-values exist already
-  if (!is.null(targets)) {
-    C <- sd(x[targets])
-  } else {
-    C <- sd(x)
-  }
-  prior.m <- prior
-  return(prior.m + C*(x - prior.m))
+  return(grand.mean + c*(x - grand.mean))
 }
