@@ -32,7 +32,14 @@ getATACABsignal <- function(obj, res = 1e6, parallel = FALSE, chr = NULL,
                              genome = c("hg19", "hg38", "mm9", "mm10"),
                              other = NULL, group = FALSE,
                              boot.parallel = FALSE, boot.cores = 2) {
-  
+
+  if (length(seqinfo(rowRanges(obj))) == 0) {
+    message("The SummarizedExperiment you have provided has no coordinates.")
+    message("Compartment extraction will almost certainly fail.")
+    message("Please provide rowRanges with genomic coordinates for the object.")
+    # FIXME: probably should stop() instead.
+  }
+
   #gather the chromosomes we are working on
   if (is.null(chr)) {
     message("Assuming we want to process all chromosomes.")
