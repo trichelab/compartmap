@@ -4,7 +4,7 @@
 \alias{getMatrixBlocks}
 \title{Get chunked sets of row-wise or column-wise indices of a matrix}
 \usage{
-getMatrixBlocks(mat, chunk.size = 1e+05, by.row = TRUE, by.col = FALSE)
+getMatrixBlocks(mat, chunk.size = 100000, by.row = TRUE, by.col = FALSE)
 }
 \arguments{
 \item{mat}{Input matrix}

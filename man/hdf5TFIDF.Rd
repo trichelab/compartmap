@@ -4,7 +4,7 @@
 \alias{hdf5TFIDF}
 \title{Transform/normalize compartment calls using TF-IDF on HDF5-backed objects}
 \usage{
-hdf5TFIDF(h5, scale.factor = 1e+05, return.dense = FALSE, return.se = FALSE)
+hdf5TFIDF(h5, scale.factor = 100000, return.dense = FALSE, return.se = FALSE)
 }
 \arguments{
 \item{h5}{SummarizedExperiment object, DelayedMatrix, or a normal matrix}
