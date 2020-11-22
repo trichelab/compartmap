@@ -12,14 +12,13 @@
 #'
 #' @return      Smoothed data matrix
 #'
-#' @export
-#'
 #' @examples
 #' dummy <- matrix(rnorm(10000), ncol=25)
 #' smooth.dummy <- meanSmoother(dummy)
 #' smooth.dummy <- meanSmoother(dummy, iter=3) 
 #' smooth.dummy <- meanSmoother(dummy, delta=1e-3) 
 #' 
+#' @export
 meanSmoother <- function(x, k=1, iter=2, na.rm=TRUE, delta=0) {
 
   if (k == 0) {
@@ -35,7 +34,7 @@ meanSmoother <- function(x, k=1, iter=2, na.rm=TRUE, delta=0) {
 
     x0 <- x 
     i <- i + 1 
-#    if (!anyNA(x0)) {
+#    if (!na.rm | !anyNA(x)) {
 #      x <- .meanSmoother.rcpp(x0, k=k)
 #    } else {
       x <- .meanSmoother.internal(x0, k=k, na.rm=na.rm)
@@ -60,13 +59,13 @@ meanSmoother <- function(x, k=1, iter=2, na.rm=TRUE, delta=0) {
   excess <- seq((last + 1), n)  # excess bins beyond eligible
 
   # why, it even looks like C++ now. note that na.rm can create issues
-  for (i in first:last) y[i] <- .window.mean(x, i=i, k=k, na.rm=na.rm)
+  for (i in first:last) y[i] <- .window.mean(x, j=i, k=k, na.rm=na.rm)
   
   # it is possible for k to be 0 in this loop, it appears
-  for (i in 1:k) y[i] <- .window.mean(x, i=i, k=i-1, na.rm=na.rm)
+  for (i in 1:k) y[i] <- .window.mean(x, j=i, k=i-1, na.rm=na.rm)
 
   # it is definitely possible for k to be 0 in this loop
-  for (i in excess) y[i] <- .window.mean(x, i=i, k=n-i, na.rm=na.rm)
+  for (i in excess) y[i] <- .window.mean(x, j=i, k=n-i, na.rm=na.rm)
 
   return(y)
 
@@ -95,14 +94,14 @@ meanSmoother <- function(x, k=1, iter=2, na.rm=TRUE, delta=0) {
   last <- n - k                 # last eligible position to smooth
   excess <- seq((last + 1), n)  # excess bins beyond eligible
 
-  # k should never be 0 in the following loop:
-  for (i in first:last) y[i] <- .window.mean.rcpp(v, i=i, k=k)
+  # k should never be 0 in the following loop unless 0 everywhere
+  for (i in first:last) y[i] <- .window.mean.rcpp(v, j=i, k=k)
   
   # it is possible for k to be 0 in this loop:
-  for (i in 1:k) y[i] <- .window.mean.rcpp(v, i=i, k=i-1)
+  for (i in 1:k) y[i] <- .window.mean.rcpp(v, j=i, k=i-1)
 
   # it is definitely possible for k to be 0 in this loop
-  for (i in excess) y[i] <- .window.mean.rcpp(v, i=i, k=n-i)
+  for (i in excess) y[i] <- .window.mean.rcpp(v, j=i, k=n-i)
 
   return(y)
 
@@ -112,7 +111,7 @@ meanSmoother <- function(x, k=1, iter=2, na.rm=TRUE, delta=0) {
 # helper fn; farm out to Rcpp
 .window.mean.rcpp <- function(v, j, k, na.rm=na.rm) {
 
-  stop(".window.mean.rcpp is not yet tested")
+  # startpos = j - k - 1, endpos = j + k, span = k + 2 
   ifelse(k > 0, mean(v[(j-k-1):(j+k)]), v[j])
 
 }
