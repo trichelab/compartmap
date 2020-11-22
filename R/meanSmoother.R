@@ -35,11 +35,11 @@ meanSmoother <- function(x, k=1, iter=2, na.rm=TRUE, delta=0) {
 
     x0 <- x 
     i <- i + 1 
-    if (!anyNA(x0)) {
-      x <- .meanSmoother.rcpp(x0, k=k)
-    } else {
+#    if (!anyNA(x0)) {
+#      x <- .meanSmoother.rcpp(x0, k=k)
+#    } else {
       x <- .meanSmoother.internal(x0, k=k, na.rm=na.rm)
-    }
+#    }
     eps <- median(abs(x - x0)) # R builtin is fastish
 
   }
