@@ -81,6 +81,7 @@ plotAB <- function(x, chr = NULL, what = "score", main="",ylim=c(-1, 1),
   #what are we plotting
   # what <- match.arg(what)
   # (no, don't do that)
+  if (!what %in% names(mcols(x))) stop(what, " is not among names(mcols(x))")
 
   # check if plotting CI
   # FIXME: refactor this 
