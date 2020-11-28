@@ -116,9 +116,7 @@ plotAB <- function(x, chr = NULL, what = "score", main="",ylim=c(-1, 1),
   } else {
     if (is(x, "GRanges")) {
       if (!is.null(chr)) x <- keepSeqlevels(x, chr, pruning.mode = "coarse")
-      x <- switch(what,
-                  score = as(x$pc, "matrix"),
-                  flip.score = as(x$flip.score, "matrix"))
+      x <- as(mcols(x)[, what], "matrix")
     }
     if (unitarize) x <- .unitarize(x)
     if (filter) x <- x[abs(x) > filter.min.eigen]
