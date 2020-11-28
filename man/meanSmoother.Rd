@@ -4,7 +4,7 @@
 \alias{meanSmoother}
 \title{Windowed mean smoother}
 \usage{
-meanSmoother(x, k = 1, iter = 2, na.rm = TRUE, delta = 0)
+meanSmoother(x, k = 1, iter = 2, na.rm = TRUE, delta = 0, w = NULL)
 }
 \arguments{
 \item{x}{Input data matrix: samples are columns, regions/loci are rows}
@@ -16,6 +16,8 @@ meanSmoother(x, k = 1, iter = 2, na.rm = TRUE, delta = 0)
 \item{na.rm}{Whether to remove NAs prior to smoothing (TRUE)}
 
 \item{delta}{Convergence threshhold (overrides iter if > 0; default is 0)}
+
+\item{w}{Weights, if using any (NULL)}
 }
 \value{
 \preformatted{ Smoothed data matrix

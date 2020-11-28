@@ -9,6 +9,7 @@
 #' @param iter  Number of iterations to smooth (default is 2)
 #' @param na.rm Whether to remove NAs prior to smoothing (TRUE)
 #' @param delta Convergence threshhold (overrides iter if > 0; default is 0) 
+#' @param w     Weights, if using any (NULL)
 #'
 #' @return      Smoothed data matrix
 #'
@@ -19,7 +20,7 @@
 #' smooth.dummy <- meanSmoother(dummy, delta=1e-3) 
 #' 
 #' @export
-meanSmoother <- function(x, k=1, iter=2, na.rm=TRUE, delta=0) {
+meanSmoother <- function(x, k=1, iter=2, na.rm=TRUE, delta=0, w=NULL) {
 
   if (k == 0) {
     message("Returning unsmoothed x. This is probably an error.") 
@@ -30,14 +31,16 @@ meanSmoother <- function(x, k=1, iter=2, na.rm=TRUE, delta=0) {
 
   i <- 0 
   eps <- delta + 1 
+  if (is.null(w)) w <- rep(1, length(x))
+
   while (i < iter & eps > delta) {
 
     x0 <- x 
     i <- i + 1 
 #    if (!na.rm | !anyNA(x)) {
-#      x <- .meanSmoother.rcpp(x0, k=k)
+#      x <- .meanSmoother.rcpp(x0, w=w, k=k)
 #    } else {
-      x <- .meanSmoother.internal(x0, k=k, na.rm=na.rm)
+      x <- .meanSmoother.internal(x0, w=w, k=k, na.rm=na.rm)
 #    }
     eps <- median(abs(x - x0)) # R builtin is fastish
 
@@ -49,7 +52,7 @@ meanSmoother <- function(x, k=1, iter=2, na.rm=TRUE, delta=0) {
 
 
 # helper fn
-.meanSmoother.internal <- function(x, k, na.rm=TRUE){
+.meanSmoother.internal <- function(x, w, k, na.rm=TRUE) {
 
   n <- length(x) 
   y <- rep(NA, n)
@@ -59,13 +62,13 @@ meanSmoother <- function(x, k=1, iter=2, na.rm=TRUE, delta=0) {
   excess <- seq((last + 1), n)  # excess bins beyond eligible
 
   # why, it even looks like C++ now. note that na.rm can create issues
-  for (i in first:last) y[i] <- .window.mean(x, j=i, k=k, na.rm=na.rm)
+  for (i in first:last) y[i] <- .window.mean(x, w=w, j=i, k=k, na.rm=na.rm)
   
   # it is possible for k to be 0 in this loop, it appears
-  for (i in 1:k) y[i] <- .window.mean(x, j=i, k=i-1, na.rm=na.rm)
+  for (i in 1:k) y[i] <- .window.mean(x, w=w, j=i, k=i-1, na.rm=na.rm)
 
   # it is definitely possible for k to be 0 in this loop
-  for (i in excess) y[i] <- .window.mean(x, j=i, k=n-i, na.rm=na.rm)
+  for (i in excess) y[i] <- .window.mean(x, w=w, j=i, k=n-i, na.rm=na.rm)
 
   return(y)
 
@@ -73,18 +76,25 @@ meanSmoother <- function(x, k=1, iter=2, na.rm=TRUE, delta=0) {
 
 
 # helper fn
-.window.mean <- function(x, j, k, na.rm=na.rm) {
+.window.mean <- function(x, w, j, k, na.rm=na.rm) {
 
-  ifelse(k > 0, mean(x[(j-k-1):(j+k)], na.rm=na.rm), x[j])
-  # startpos = j - k - 1
-  # endpos = j + k
   # span = k + 2 
+  # endpos = j + k
+  # startpos = j - k - 1
+  if(k > 0) {
+    endpos <- j + k 
+    startpos <- j - k - 1
+    stride <- seq(startpos, endpos)
+    weighted.mean(x[stride], w=w[stride], na.rm=na.rm)
+  } else { 
+    x[j]
+  }
 
 }
 
 
 # helper fn; farm out to Rcpp
-.meanSmoother.rcpp <- function(v, k) { 
+.meanSmoother.rcpp <- function(v, w, k) { # {{{
 
   stop(".meanSmoother.rcpp is not yet tested")
   
@@ -95,23 +105,32 @@ meanSmoother <- function(x, k=1, iter=2, na.rm=TRUE, delta=0) {
   excess <- seq((last + 1), n)  # excess bins beyond eligible
 
   # k should never be 0 in the following loop unless 0 everywhere
-  for (i in first:last) y[i] <- .window.mean.rcpp(v, j=i, k=k)
+  for (i in first:last) y[i] <- .window.mean.rcpp(v, w=w, j=i, k=k)
   
   # it is possible for k to be 0 in this loop:
-  for (i in 1:k) y[i] <- .window.mean.rcpp(v, j=i, k=i-1)
+  for (i in 1:k) y[i] <- .window.mean.rcpp(v, w=w, j=i, k=i-1)
 
-  # it is definitely possible for k to be 0 in this loop
-  for (i in excess) y[i] <- .window.mean.rcpp(v, j=i, k=n-i)
+  # it is definitely possible for k to be 0 in this loop:
+  for (i in excess) y[i] <- .window.mean.rcpp(v, w=w, j=i, k=n-i)
 
   return(y)
 
-}
+} # }}}
 
 
-# helper fn; farm out to Rcpp
-.window.mean.rcpp <- function(v, j, k, na.rm=na.rm) {
+# helper fn; farm out to RcppArmadillo/Kalman filter?
+.window.mean.rcpp <- function(v, w, j, k, na.rm=na.rm) { # {{{
 
-  # startpos = j - k - 1, endpos = j + k, span = k + 2 
-  ifelse(k > 0, mean(v[(j-k-1):(j+k)]), v[j])
+  stop(".window.mean.rcpp is not yet tested")
 
-}
+  if(k > 0) { 
+    # shift by 1?
+    endpos <- j + k 
+    startpos <- j - k - 1
+    stride <- seq(startpos, endpos) # works fine : evalCpp("seq(1,3)")
+    weighted.mean(x[stride], w=w[stride], na.rm=na.rm) # or Kalman?
+  } else { 
+    x[j]
+  }
+
+} # }}}
