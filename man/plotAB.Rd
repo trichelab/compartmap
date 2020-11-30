@@ -7,7 +7,7 @@
 plotAB(
   x,
   chr = NULL,
-  what = c("score", "flip.score"),
+  what = "score",
   main = "",
   ylim = c(-1, 1),
   unitarize = FALSE,
@@ -25,11 +25,13 @@ plotAB(
 
 \item{chr}{Chromosome to subset to for plotting}
 
+\item{what}{Which metadata column to plot}
+
 \item{main}{Title for the plot}
 
 \item{ylim}{Y-axis limits (default is -1 to 1)}
 
-\item{unitarize}{Should the data be unitarized? (not explicitly necessary for arrays)}
+\item{unitarize}{Should the data be unitarized? (not necessary for arrays)}
 
 \item{reverse}{Reverse the sign of the PC values?}
 
@@ -41,12 +43,9 @@ plotAB(
 
 \item{filter}{Whether to filter eigenvalues close to zero (default: TRUE)}
 
-\item{median.conf}{Whether to plot the median confidence estimate across the chromosome}
+\item{median.conf}{Plot the median confidence estimate across the chromosome?}
 
-\item{filter.lower.bound}{The minimum absolute eigenvalue to include in the plot}
-}
-\value{
-invisibly, the compartment estimates from the plot
+\item{filter.lower.bound}{Minimum absolute eigenvalue to include in the plot}
 }
 \description{
 Plot A/B compartments bins

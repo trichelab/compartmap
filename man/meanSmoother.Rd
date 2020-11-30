@@ -4,24 +4,27 @@
 \alias{meanSmoother}
 \title{Windowed mean smoother}
 \usage{
-meanSmoother(x, k = 1, iter = 2, na.rm = TRUE, delta = NULL)
+meanSmoother(x, k = 1, iter = 2, na.rm = TRUE, delta = 0, w = NULL)
 }
 \arguments{
-\item{x}{Input data matrix where samples are columns and regions/loci are rows}
+\item{x}{Input data matrix: samples are columns, regions/loci are rows}
 
-\item{k}{The number of windows to use (k=1 is 3 windows and k=2 is 5 windows)}
+\item{k}{Number of windows to use (default k=1, i.e., 3 windows)}
 
-\item{iter}{The number of iterations to smooth (default is 2)}
+\item{iter}{Number of iterations to smooth (default is 2)}
 
-\item{na.rm}{Whether to remove NAs prior to smoothing}
+\item{na.rm}{Whether to remove NAs prior to smoothing (TRUE)}
 
-\item{delta}{Per-iteration epsilon to accept as convergence (overrides iter)}
+\item{delta}{Convergence threshhold (overrides iter if > 0; default is 0)}
+
+\item{w}{Weights, if using any (NULL)}
 }
 \value{
-Smoothed data matrix
+\preformatted{ Smoothed data matrix
+}
 }
 \description{
-Windowed mean smoother
+TODO: farm out to C++ and test, at least when there are no NAs
 }
 \examples{
 dummy <- matrix(rnorm(10000), ncol=25)
