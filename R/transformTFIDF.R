@@ -20,7 +20,9 @@
 #' @export
 transformTFIDF <- function(obj, scale.factor = 1e5) {
   #this filters using TF-IDF on a *matrix* object
-  if (!is(obj, "matrix")) stop("Input needs to be a matrix.")
+  if (!is(obj, "matrix") & !is(obj, "Matrix")) {
+    stop("Input needs to be a matrix.")
+  }
   #
   # FIXME: cite the following in the docs
   #
