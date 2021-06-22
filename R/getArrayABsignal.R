@@ -60,55 +60,6 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   columns <- colnames(obj)
   names(columns) <- columns
   
-  #worker function
-  arrayCompartments <- function(obj, original.obj, res = 1e6, chr = NULL, targets = NULL,
-                                genome = c("hg19", "hg38", "mm9", "mm10"),
-                                prior.means = NULL, bootstrap = TRUE,
-                                num.bootstraps = 1000, parallel = FALSE,
-                                cores = 2, group = FALSE) {
-    #this is the main analysis function for computing compartments from arrays
-    #make sure the input is sane
-    if (!checkAssayType(obj)) stop("Input needs to be a SummarizedExperiment")
-
-    #what genome do we have
-    genome <- match.arg(genome)
-    
-    #set the parallel back-end core number
-    if (parallel) options(mc.cores = cores)
-    
-    #update
-    message("Computing compartments for ", chr)
-    obj <- keepSeqlevels(obj, chr, pruning.mode = "coarse")
-    original.obj <- keepSeqlevels(original.obj, chr, pruning.mode = "coarse")
-    
-    #get the shrunken bins
-    obj.bins <- shrinkBins(obj, original.obj, prior.means = prior.means, chr = chr,
-                           res = res, targets = targets, assay = "array",
-                           genome = genome)
-    #compute correlations
-    if (group) obj.cor <- getCorMatrix(obj.bins, squeeze = FALSE)
-    if (isFALSE(group)) obj.cor <- getCorMatrix(obj.bins, squeeze = TRUE)
-    if (any(is.na(obj.cor$binmat.cor))) {
-      obj.cor$gr$pc <- matrix(rep(NA, nrow(obj.cor$binmat.cor)))
-      obj.svd <- obj.cor$gr
-    } else {
-      #compute SVD of correlation matrix
-      obj.svd <- getABSignal(obj.cor, assay = "array")
-    }
-
-    if (isFALSE(bootstrap)) return(obj.svd)
-    
-    #bootstrap the estimates
-    #always compute confidence intervals too
-    obj.bootstrap <- bootstrapCompartments(obj, original.obj, bootstrap.samples = num.bootstraps,
-                                           chr = chr, assay = "array", parallel = parallel, cores = cores,
-                                           targets = targets, res = res, genome = genome, q = 0.95,
-                                           svd = obj.svd, group = group)
-    
-    #combine and return
-    return(obj.bootstrap)
-  }
-  
   #initialize global means
   #gmeans <- getGlobalMeans(obj, targets = targets, assay = "array")
   
@@ -116,7 +67,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     array.compartments <- mclapply(columns, function(s) {
       obj.sub <- obj[,s]
       message("Working on ", s)
-      saveRDS(sort(unlist(as(lapply(chr, function(c) arrayCompartments(obj.sub, obj, res = res,
+      saveRDS(sort(unlist(as(lapply(chr, function(c) .arrayCompartments(obj.sub, obj, res = res,
                                                                chr = c, targets = targets, genome = genome,
                                                                bootstrap = bootstrap,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
@@ -129,7 +80,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
     array.compartments <- lapply(columns, function(s) {
       obj.sub <- obj[,s]
       message("Working on ", s)
-      sort(unlist(as(lapply(chr, function(c) arrayCompartments(obj.sub, obj, res = res,
+      sort(unlist(as(lapply(chr, function(c) .arrayCompartments(obj.sub, obj, res = res,
                                                                chr = c, targets = targets, genome = genome,
                                                                bootstrap = bootstrap,
                                                                num.bootstraps = num.bootstraps, parallel = boot.parallel,
@@ -139,7 +90,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   
   if (parallel & isTRUE(group)) {
     array.compartments <- sort(unlist(as(mclapply(chr, function(c) {
-      arrayCompartments(obj, obj, res = res,
+      .arrayCompartments(obj, obj, res = res,
                         chr = c, targets = targets, genome = genome,
                         bootstrap = bootstrap,num.bootstraps = num.bootstraps,
                         parallel = boot.parallel, cores = boot.cores, group = group)},
@@ -148,7 +99,7 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
   
   if (!parallel & isTRUE(group)) {
     array.compartments <- sort(unlist(as(lapply(chr, function(c) {
-      arrayCompartments(obj, obj, res = res,
+      .arrayCompartments(obj, obj, res = res,
                         chr = c, targets = targets, genome = genome,
                         bootstrap = bootstrap,num.bootstraps = num.bootstraps,
                         parallel = boot.parallel, cores = boot.cores, group = group)}),
@@ -211,4 +162,68 @@ preprocessArrays <- function(obj,
   }
   
   return(obj.opensea)
+}
+
+
+
+
+#worker function
+.arrayCompartments <- function(obj, original.obj, res = 1e6, chr = NULL, 
+                               targets = NULL,
+                               genome = c("hg19", "hg38", "mm9", "mm10"),
+                               prior.means = NULL, bootstrap = TRUE,
+                               num.bootstraps = 1000, parallel = FALSE,
+                               cores = 2, group = FALSE) {
+
+  #this is the main analysis function for computing compartments from arrays
+  #make sure the input is sane
+  if (!checkAssayType(obj)) stop("Input needs to be a SummarizedExperiment")
+
+  #what genome do we have
+  genome <- match.arg(genome)
+    
+  #set the parallel back-end core number
+  if (parallel) options(mc.cores = cores)
+    
+  #update
+  message("Computing compartments for ", chr)
+  obj <- keepSeqlevels(obj, chr, pruning.mode = "coarse")
+  original.obj <- keepSeqlevels(original.obj, chr, pruning.mode = "coarse")
+    
+  #get the shrunken bins
+  obj.bins <- shrinkBins(obj, original.obj, prior.means=prior.means, chr = chr,
+                           res = res, targets = targets, assay = "array",
+                           genome = genome)
+  
+  #compute correlations
+  if (group) obj.cor <- getCorMatrix(obj.bins, squeeze = FALSE)
+  if (isFALSE(group)) obj.cor <- getCorMatrix(obj.bins, squeeze = TRUE)
+  if (any(is.na(obj.cor$binmat.cor))) {
+    obj.cor$gr$pc <- matrix(rep(NA, nrow(obj.cor$binmat.cor)))
+    obj.svd <- obj.cor$gr
+  } else {
+    #compute SVD of correlation matrix
+    obj.svd <- getABSignal(obj.cor, assay = "array")
+  }
+
+  if (isFALSE(bootstrap)) return(obj.svd)
+  
+  #bootstrap the estimates
+  #always compute confidence intervals too
+  obj.bootstrap <- bootstrapCompartments(obj, 
+                                         original.obj, 
+                                         bootstrap.samples = num.bootstraps,
+                                         chr = chr, 
+                                         assay = "array", 
+                                         parallel = parallel, 
+                                         cores = cores,
+                                         targets = targets, 
+                                         res = res, 
+                                         genome = genome, 
+                                         q = 0.95,
+                                         svd = obj.svd, 
+                                         group = group)
+  
+  #combine and return
+  return(obj.bootstrap)
 }
