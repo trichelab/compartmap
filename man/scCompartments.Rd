@@ -6,7 +6,7 @@
 \usage{
 scCompartments(
   obj,
-  res = 1000000,
+  res = 1e+06,
   parallel = FALSE,
   chr = NULL,
   targets = NULL,

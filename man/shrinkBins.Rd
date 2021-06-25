@@ -9,7 +9,7 @@ shrinkBins(
   original.x,
   prior.means = NULL,
   chr = NULL,
-  res = 1000000,
+  res = 1e+06,
   targets = NULL,
   jse = FALSE,
   assay = c("array", "atac", "bisulfite", "rna"),

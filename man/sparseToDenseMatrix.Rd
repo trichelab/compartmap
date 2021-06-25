@@ -9,7 +9,7 @@ sparseToDenseMatrix(
   blockwise = TRUE,
   by.row = TRUE,
   by.col = FALSE,
-  chunk.size = 100000,
+  chunk.size = 1e+05,
   parallel = FALSE,
   cores = 2
 )

@@ -2,11 +2,12 @@ Package: compartmap
 Type: Package
 Title: A/B compartment inference from ATAC-seq and methylation array data
 Description: Compartmap performs shrunken A/B compartment inference from ATAC-seq, BS-seq, and methylation arrays.
-Version: 1.13.29
-Date: 2021-06-22
+Version: 1.13.30
+Date: 2021-06-25
 Authors@R: c(person("Benjamin", "Johnson", role = c("aut", "cre"),
                     email = "ben.johnson@vai.org",),
              person("Tim", "Triche", role = c("aut")),
+	     person("Hui", "Shen", role = c("aut")),
              person("Kasper", "Hansen", role = c("aut")),
              person("Jean-Philippe", "Fortin", role = c("aut")))
 URL: https://github.com/biobenkj/compartmap

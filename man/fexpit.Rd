@@ -4,7 +4,7 @@
 \alias{fexpit}
 \title{Helper function: expanded expit}
 \usage{
-fexpit(x, sqz = 0.000001)
+fexpit(x, sqz = 1e-06)
 }
 \arguments{
 \item{x}{a vector of values between -Inf and +Inf}

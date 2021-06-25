@@ -48,6 +48,14 @@ getArrayABsignal <- function(obj, res = 1e6, parallel = TRUE, chr = NULL,
                             array.type = array.type)
   }
   
+  # critical check if imputation was _not_ done
+  # to send things back to beta land
+  is.beta <- ifelse(min(assays(obj)$Beta, na.rm = TRUE) < 0, FALSE, TRUE)
+  if (!is.beta) {
+    #send things back to beta land
+    assays(obj)$Beta <- fexpit(assays(obj)$Beta)
+    }
+  
   #gather the chromosomes we are working on
   if (is.null(chr)) {
     message("Assuming we want to process all chromosomes.")

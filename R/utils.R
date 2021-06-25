@@ -29,6 +29,8 @@ filterOpenSea <- function(obj, genome = c("hg19", "hg38", "mm10", "mm9"), other 
   }
   #Subset by overlaps
   message("Filtering to open sea CpG loci...")
+  #subset to just CpG loci if CpH or rs probes still exist
+  obj <- obj[grep("cg", rownames(obj)),]
   obj.openseas <- subsetByOverlaps(obj, get(openseas.genome))
   return(obj.openseas)
 }
